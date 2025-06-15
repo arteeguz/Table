@@ -89,12 +89,12 @@ CREATE TABLE logs (
 );
 
 CREATE TABLE technicians(
-    id SERIAL PRIMARY KEY, 
+    id SERIAL PRIMARY KEY,
     name VARCHAR(255)
 );
 
 CREATE TABLE scripts(
-    id SERIAL PRIMARY KEY, 
+    id SERIAL PRIMARY KEY,
     name VARCHAR(255),
     script VARCHAR(2000)
 );
@@ -105,7 +105,7 @@ createTable();
 
 
 module.exports = {
-    query: (text, params, callback) => {
+    query: (text,params, callback) => {
         console.log("QUERY:", text,params || "");
         return pool.query(text,params,callback);
     },
