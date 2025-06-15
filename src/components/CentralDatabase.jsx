@@ -50,7 +50,7 @@ const CentralDatabase = ({ darkMode }) => {
     
     const fetchAssets = async () => {
         try {
-            const url = selectedTableName ? `http://sei60590.fg.rbc.com:5000/api/asset-by-tableName?table_name=${selectedTableName}` : 'http://sei60590.fg.rbc.com:5000/api/assets';
+            const url = selectedTableName ? `http://se160590.fg.rbc.com:5000/api/asset-by-tableName?table_name=${selectedTableName}` : 'http://se160590.fg.rbc.com:5000/api/assets';
             const response = await fetch(url);
             if (!response.ok) {
                 throw new Error('Failed to fetch assets');
