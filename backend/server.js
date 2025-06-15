@@ -145,6 +145,25 @@ app.get('/api/table-names', async (req,res) => {
   }
 });
 
+// Delete table endpoint
+app.delete('/api/tables/:tableName', async (req, res) => {
+  const { tableName } = req.params;
+  
+  if (!tableName) {
+    return res.status(400).send({ success: false, error: 'Table name is required' });
+  }
+  
+  try {
+    const result = await pool.query('DELETE FROM assets WHERE table_name = $1', [tableName]);
+    res.send({ 
+      success: true, 
+      message: `Deleted ${result.rowCount} assets from table "${tableName}"` 
+    });
+  } catch (error) {
+    console.error('Error deleting table:', error);
+    res.status(500).send({ success: false, error: 'Database error' });
+  }
+});
 
 app.post('/api/print-test', async (req, res) => {
   try {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSave, faTimes, faEdit, faUser, faTrashAlt, faFileExcel, fa,Sync, faUpload } from '@fortawesome/free-solid-svg-icons';
+import { faSave, faTimes, faEdit, faUser, faTrashAlt, faFileExcel, faSync, faUpload } from '@fortawesome/free-solid-svg-icons';
 import { useTable, useFilters, useSortBy } from 'react-table'
 import { useTableContext } from './TableContext';
 import * as XLSX from 'xlsx';
@@ -16,8 +16,10 @@ const CentralDatabase = ({ darkMode }) => {
     const [userInfo, setUserInfo] = useState({});
     const [selectedFile, setSelectedFile] = useState(null);
     const [view, setView] = useState('default');
-    const {setSelectedTableName, setSelectedTableData} = useTableContext();
-    const [tableName, setTableName] = useState('');
+    const {selectedTableName, setSelectedTableName, setSelectedTableData} = useTableContext();
+    const [tableNames, setTableNames] = useState([]);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [tableToDelete, setTableToDelete] = useState('');
 
     useEffect(() => {
         fetchAssets();
@@ -279,6 +281,46 @@ const CentralDatabase = ({ darkMode }) => {
     const handleButtonClick = () => {
         document.getElementById('fileInput').click();
     };
+        
+    const handleDeleteTable = (tableName) => {
+        setTableToDelete(tableName);
+        setShowDeleteConfirm(true);
+    };
+
+    const confirmDeleteTable = async () => {
+        try {
+            const response = await fetch(`http://sei60590.fg.rbc.com:5000/api/tables/${tableToDelete}`, {
+                method: 'DELETE',
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to delete table');
+            }
+            
+            const result = await response.json();
+            console.log(result.message);
+            
+            // Reset state and refresh data
+            setSelectedTableName('');
+            setShowDeleteConfirm(false);
+            setTableToDelete('');
+            
+            // Refresh table names and assets
+            const tableNamesResponse = await fetch('http://sei60590.fg.rbc.com:5000/api/table-names');
+            const tableNamesData = await tableNamesResponse.json();
+            setTableNames(tableNamesData);
+            
+            fetchAssets();
+        } catch (error) {
+            console.error('Failed to delete table:', error);
+            alert('Failed to delete table. Please try again.');
+        }
+    };
+
+    const cancelDeleteTable = () => {
+        setShowDeleteConfirm(false);
+        setTableToDelete('');
+    };
 
     const columns = React.useMemo(() => {
         if (view === 'default') {
@@ -404,19 +446,28 @@ const CentralDatabase = ({ darkMode }) => {
                         <option value="Mobility">Mobility View</option>
                     </select>
                 </div>
-                <div className="ml-10 text-center">
+                <div className="ml-10 text-center flex items-center gap-2">
                     <select
                         value={selectedTableName}
                         onChange={handleSelectChange}
-                        className={`px-4 py-2 rounded-md ${darkMode ? 'bg-gray-800 border-gray-600 text-gray-900' : 'bg-white border-gray-300 text-gray-900'}`}
+                        className={`px-4 py-2 rounded-md ${darkMode ? 'bg-gray-800 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-900'}`}
                     >
                         <option value="">Select Year</option>
-                        {tableName.map((table) => (
+                        {tableNames.map((table) => (
                             <option key={table.table_name} value={table.table_name}>
                                 {table.table_name}
                             </option>
                         ))}
                     </select>
+                    {selectedTableName && (
+                        <button
+                            onClick={() => handleDeleteTable(selectedTableName)}
+                            className={`px-3 py-2 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
+                            title="Delete Table"
+                        >
+                            <FontAwesomeIcon icon={faTrashAlt} />
+                        </button>
+                    )}
                 </div>
 
             </div>
@@ -511,6 +562,33 @@ const CentralDatabase = ({ darkMode }) => {
                     </tbody>
                 </table>
             </div>
+
+            {showDeleteConfirm && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm w-full mx-4">
+                        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
+                            Confirm Delete
+                        </h3>
+                        <p className="text-gray-700 dark:text-gray-300 mb-6">
+                            Are you sure you want to delete table "{tableToDelete}"? This will permanently remove all associated assets.
+                        </p>
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={cancelDeleteTable}
+                                className={`px-4 py-2 rounded-md ${darkMode ? 'bg-gray-600 text-gray-100 hover:bg-gray-700' : 'bg-gray-300 text-gray-700 hover:bg-gray-400'}`}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmDeleteTable}
+                                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
