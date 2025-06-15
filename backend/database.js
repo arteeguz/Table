@@ -14,7 +14,7 @@ const pool = new Pool({
 
 const createTableQuery = 
     ` CREATE TABLE IF NOT EXISTS asset_table (
-        id SERIAL PROMARY KEY,
+        id SERIAL PRIMARY KEY,
         asset VARCHAR(100) NOT NULL,
         tech VARCHAR(100) NOT NULL
     );
