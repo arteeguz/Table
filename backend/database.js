@@ -61,11 +61,11 @@ CREATE TABLE assets (
     phone_serial VARCHAR(255),
     phone_ime1 VARCHAR(255),
     phone_platform VARCHAR(255),
-    onboarding_date VARCHAT(255),
-    school VARCHAT(255),
-    table_name VARCHAT(255),
-    ynx1c_date VARCHAT(255),
-    imaging_VARCHAT(255),
+    onboarding_date VARCHAR(255),
+    school VARCHAR(255),
+    table_name VARCHAR(255),
+    ynx1c_date VARCHAR(255),
+    imaging_date VARCHAR(255),
 );
 
 
