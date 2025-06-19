@@ -403,7 +403,7 @@ const CentralDatabase = ({ darkMode }) => {
 
     return (
         <div className={`mx-auto p-4 ${darkMode ? 'dark' : ''}`}>
-            <h1 className="mr-20 text-3xl font-bold mb-4 text-center text-gray-900 darkitext-gray-100">Andro is Gay!</h1>
+            <h1 className="mr-20 text-3xl font-bold mb-4 text-center text-gray-900 darkitext-gray-100">Central Database</h1>
             
             <div className="bg-white shadow-lg rounded-lg dark:bg-gray-800 mb-8 p-4 w-full">
                 <h2 className="text-xl font-semibold mb-4 text-gray-700 darkitext-gray-300 text-center">Actions</h2>
