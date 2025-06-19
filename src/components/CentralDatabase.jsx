@@ -497,7 +497,8 @@ const CentralDatabase = ({ darkMode }) => {
 
     return (
         <div className={`min-h-screen p-6 ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
-            <div className="max-w-full">
+            {/* Fixed width header content - always uses full screen width */}
+            <div className="w-full mb-6">
                 <h1 className="text-3xl font-bold mb-6 text-center text-gray-900 dark:text-gray-100">Central Database</h1>
                 
                 {/* Actions Panel */}
@@ -575,7 +576,10 @@ const CentralDatabase = ({ darkMode }) => {
                         darkMode={darkMode}
                     />
                 </div>
+            </div>
 
+            {/* Table Container - separate from header content */}
+            <div className="w-full">
                 {/* Table Container */}
                 <div className="bg-white shadow-lg rounded-lg dark:bg-gray-800 overflow-hidden">
                     <div className="overflow-x-auto" style={{ maxHeight: 'calc(100vh - 400px)' }}>
