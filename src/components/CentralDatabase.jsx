@@ -492,7 +492,7 @@ const CentralDatabase = ({ darkMode }) => {
 
             <div className="w-full overflow-auto shadow-lg rounded-lg">
                 <div className="inline-block min-w-full align-middle">
-                    <table {...getTableProps()} className="min-w-full border-collapse overflow-scroll">
+                    <table {...getTableProps()} className="min-w-full border-collapse">
                         <thead className="sticky top-0 z-10">
                             {headerGroups.map(headerGroup => (
                                 <React.Fragment key={headerGroup.id}>
