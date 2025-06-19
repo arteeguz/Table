@@ -46,7 +46,7 @@ const CentralDatabase = ({ darkMode }) => {
     useEffect(() => {
         const fetchTableNames = async () => {
             try {
-                const response = await fetch('http://sei60590.fg.rbc.com:5000/api/table-names');
+                const response = await fetch('http://se160590.fg.rbc.com:5000/api/table-names');
                 if (!response.ok) {
                     throw new Error('Failed to fetch table names');
                 }
@@ -63,7 +63,7 @@ const CentralDatabase = ({ darkMode }) => {
     
     const fetchAssets = async () => {
         try {
-            const url = selectedTableName ? `http://sei60590.fg.rbc.com:5000/api/asset-by-table?table_name=${selectedTableName}` : 'http://sei60590.fg.rbc.com:5000/api/assets';
+            const url = selectedTableName ? `http://se160590.fg.rbc.com:5000/api/asset-by-table?table_name=${selectedTableName}` : 'http://se160590.fg.rbc.com:5000/api/assets';
             const response = await fetch(url);
             if (!response.ok) {
                 throw new Error('Failed to fetch assets');
@@ -93,7 +93,7 @@ const CentralDatabase = ({ darkMode }) => {
 
     const handleSaveClick = async () => {
         try {
-            const response = await fetch(`http://sei60590.fg.rbc.com:5000/api/assets/${editAssetId}`, {
+            const response = await fetch(`http://se160590.fg.rbc.com:5000/api/assets/${editAssetId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ const CentralDatabase = ({ darkMode }) => {
 
     const handleFetchUserInfo = async (employeeId) => {
         try {
-            const response = await fetch(`http://sei60590.fg.rbc.com:5000/api/run-powershell`, {
+            const response = await fetch(`http://se160590.fg.rbc.com:5000/api/run-powershell`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -202,7 +202,7 @@ const CentralDatabase = ({ darkMode }) => {
                     home_drive: driveID
                 };
 
-                const response = await fetch(`http://sei60590.fg.rbc.com:5000/api/assets/${assetToUpdate.id}`, {
+                const response = await fetch(`http://se160590.fg.rbc.com:5000/api/assets/${assetToUpdate.id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -247,7 +247,7 @@ const CentralDatabase = ({ darkMode }) => {
 
     const handleDelete = async (assetId) => {
         try {
-            const response = await fetch(`http://sei60590.fg.rbc.com:5000/api/assets/${assetId}`, {
+            const response = await fetch(`http://se160590.fg.rbc.com:5000/api/assets/${assetId}`, {
                 method: 'DELETE',
             });
             if (!response.ok) {
@@ -272,7 +272,7 @@ const CentralDatabase = ({ darkMode }) => {
         formData.append('file', file);
 
         try {
-            const response = await axios.post('http://sei60590.fg.rbc.com:5000/api/upload', formData, {
+            const response = await axios.post('http://se160590.fg.rbc.com:5000/api/upload', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -301,8 +301,8 @@ const CentralDatabase = ({ darkMode }) => {
     };
 
     const confirmDeleteTable = async () => {
-        try {
-            const response = await fetch(`http://sei60590.fg.rbc.com:5000/api/tables/${tableToDelete}`, {
+        try {se160590
+            const response = await fetch(`http://se160590.fg.rbc.com:5000/api/tables/${tableToDelete}`, {
                 method: 'DELETE',
             });
             
@@ -319,7 +319,7 @@ const CentralDatabase = ({ darkMode }) => {
             setTableToDelete('');
             
             // Refresh table names and assets
-            const tableNamesResponse = await fetch('http://sei60590.fg.rbc.com:5000/api/table-names');
+            const tableNamesResponse = await fetch('http://se160590.fg.rbc.com:5000/api/table-names');
             const tableNamesData = await tableNamesResponse.json();
             setTableNames(tableNamesData);
             
