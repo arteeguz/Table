@@ -6,6 +6,47 @@ import { useTableContext } from './TableContext';
 import * as XLSX from 'xlsx';
 import axios from 'axios';
 
+// Add custom CSS for always-visible scrollbars
+const scrollbarStyles = `
+    .always-show-scrollbar::-webkit-scrollbar {
+        -webkit-appearance: none;
+        width: 14px;
+        height: 14px;
+    }
+    
+    .always-show-scrollbar::-webkit-scrollbar-track {
+        background-color: rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+    }
+    
+    .always-show-scrollbar::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.3);
+        border-radius: 10px;
+        border: 2px solid transparent;
+        background-clip: content-box;
+    }
+    
+    .always-show-scrollbar::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    .dark .always-show-scrollbar::-webkit-scrollbar-track {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .dark .always-show-scrollbar::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .dark .always-show-scrollbar::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .always-show-scrollbar {
+        overflow: scroll !important;
+    }
+`;
+
 // Default column filter component
 function DefaultColumnFilter({
     column: { filterValue, preFilteredRows, setFilter },
@@ -95,6 +136,17 @@ const CentralDatabase = ({ darkMode }) => {
     const [tableNames, setTableNames] = useState([]);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [tableToDelete, setTableToDelete] = useState('');
+
+    // Inject scrollbar styles
+    useEffect(() => {
+        const styleElement = document.createElement('style');
+        styleElement.textContent = scrollbarStyles;
+        document.head.appendChild(styleElement);
+        
+        return () => {
+            document.head.removeChild(styleElement);
+        };
+    }, []);
 
     useEffect(() => {
         fetchAssets();
@@ -394,7 +446,7 @@ const CentralDatabase = ({ darkMode }) => {
         setTableToDelete('');
     };
 
-    // Enhanced columns with filters
+    // Enhanced columns with auto-sizing
     const columns = React.useMemo(() => {
         const getColumnFilter = (accessor) => {
             // Use select filter for specific columns with limited options
@@ -406,62 +458,62 @@ const CentralDatabase = ({ darkMode }) => {
 
         if (view === 'default') {
             return [
-                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter, minWidth: 150 },
-                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter, minWidth: 100 },
-                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'Preferred Name', accessor: 'preferred_name', Filter: DefaultColumnFilter, minWidth: 130 },
-                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'RBC Email', accessor: 'rbc_email', Filter: DefaultColumnFilter, minWidth: 200 },
-                { Header: 'Home Drive', accessor: 'home_drive', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Asset Number', accessor: 'asset_number', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'School', accessor: 'school', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Business Manager', accessor: 'business_manager', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Transit', accessor: 'transit', Filter: DefaultColumnFilter, minWidth: 100 },
-                { Header: 'Location', accessor: 'location', Filter: SelectColumnFilter, minWidth: 120 },
-                { Header: 'Phone Number', accessor: 'phone_number', Filter: DefaultColumnFilter, minWidth: 130 },
-                { Header: 'Phone Serial', accessor: 'phone_serial', Filter: DefaultColumnFilter, minWidth: 130 },
-                { Header: 'IMEI', accessor: 'phone_imei', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Phone Platform', accessor: 'phone_platform', Filter: SelectColumnFilter, minWidth: 130 },
-                { Header: 'Onboarding Date', accessor: 'onboarding_date', Filter: DefaultColumnFilter, minWidth: 140 },
-                { Header: 'Assigned Tech', accessor: 'technician', Filter: SelectColumnFilter, minWidth: 130 }
+                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter },
+                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter },
+                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter },
+                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter },
+                { Header: 'Preferred Name', accessor: 'preferred_name', Filter: DefaultColumnFilter },
+                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter },
+                { Header: 'RBC Email', accessor: 'rbc_email', Filter: DefaultColumnFilter },
+                { Header: 'Home Drive', accessor: 'home_drive', Filter: DefaultColumnFilter },
+                { Header: 'Asset Number', accessor: 'asset_number', Filter: DefaultColumnFilter },
+                { Header: 'School', accessor: 'school', Filter: DefaultColumnFilter },
+                { Header: 'Business Manager', accessor: 'business_manager', Filter: DefaultColumnFilter },
+                { Header: 'Transit', accessor: 'transit', Filter: DefaultColumnFilter },
+                { Header: 'Location', accessor: 'location', Filter: SelectColumnFilter },
+                { Header: 'Phone Number', accessor: 'phone_number', Filter: DefaultColumnFilter },
+                { Header: 'Phone Serial', accessor: 'phone_serial', Filter: DefaultColumnFilter },
+                { Header: 'IMEI', accessor: 'phone_imei', Filter: DefaultColumnFilter },
+                { Header: 'Phone Platform', accessor: 'phone_platform', Filter: SelectColumnFilter },
+                { Header: 'Onboarding Date', accessor: 'onboarding_date', Filter: DefaultColumnFilter },
+                { Header: 'Assigned Tech', accessor: 'technician', Filter: SelectColumnFilter }
             ];
         } else if (view === 'DSS') {
             return [
-                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter, minWidth: 150 },
-                { Header: 'Asset Number', accessor: 'asset_number', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter, minWidth: 100 },
-                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'RBC Email', accessor: 'rbc_email', Filter: DefaultColumnFilter, minWidth: 200 },
-                { Header: 'Onboarding Date', accessor: 'onboarding_date', Filter: DefaultColumnFilter, minWidth: 140 },
-                { Header: 'Assigned Tech', accessor: 'technician', Filter: SelectColumnFilter, minWidth: 130 },
+                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter },
+                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter },
+                { Header: 'Asset Number', accessor: 'asset_number', Filter: DefaultColumnFilter },
+                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter },
+                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter },
+                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter },
+                { Header: 'RBC Email', accessor: 'rbc_email', Filter: DefaultColumnFilter },
+                { Header: 'Onboarding Date', accessor: 'onboarding_date', Filter: DefaultColumnFilter },
+                { Header: 'Assigned Tech', accessor: 'technician', Filter: SelectColumnFilter },
             ];
         } else if (view === 'HR') {
             return [
-                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter, minWidth: 150 },
-                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'School', accessor: 'school', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Business Manager', accessor: 'business_manager', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Transit', accessor: 'transit', Filter: DefaultColumnFilter, minWidth: 100 },
-                { Header: 'Location', accessor: 'location', Filter: SelectColumnFilter, minWidth: 120 },
-                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter, minWidth: 100 },
+                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter },
+                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter },
+                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter },
+                { Header: 'School', accessor: 'school', Filter: DefaultColumnFilter },
+                { Header: 'Business Manager', accessor: 'business_manager', Filter: DefaultColumnFilter },
+                { Header: 'Transit', accessor: 'transit', Filter: DefaultColumnFilter },
+                { Header: 'Location', accessor: 'location', Filter: SelectColumnFilter },
+                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter },
+                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter },
             ];
         } 
         else if (view === 'Mobility') {
             return [
-                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'Phone Number', accessor: 'phone_number', Filter: DefaultColumnFilter, minWidth: 130 },
-                { Header: 'Phone Serial', accessor: 'phone_serial', Filter: DefaultColumnFilter, minWidth: 130 },
-                { Header: 'IMEI', accessor: 'phone_imei', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Phone Platform', accessor: 'phone_platform', Filter: SelectColumnFilter, minWidth: 130 },
-                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter, minWidth: 150 },
-                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter, minWidth: 100 },
+                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter },
+                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter },
+                { Header: 'Phone Number', accessor: 'phone_number', Filter: DefaultColumnFilter },
+                { Header: 'Phone Serial', accessor: 'phone_serial', Filter: DefaultColumnFilter },
+                { Header: 'IMEI', accessor: 'phone_imei', Filter: DefaultColumnFilter },
+                { Header: 'Phone Platform', accessor: 'phone_platform', Filter: SelectColumnFilter },
+                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter },
+                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter },
+                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter },
             ];
         }
         return [];
@@ -497,13 +549,15 @@ const CentralDatabase = ({ darkMode }) => {
 
     return (
         <div className={`min-h-screen p-6 ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
-            <div className="max-w-full">
-                <h1 className="text-3xl font-bold mb-6 text-center text-gray-900 dark:text-gray-100">Central Database</h1>
+            {/* Changed from max-w-full to w-full and removed centering */}
+            <div className="w-full">
+                {/* Left-aligned title */}
+                <h1 className="text-3xl font-bold mb-6 text-left text-gray-900 dark:text-gray-100">Central Database</h1>
                 
-                {/* Actions Panel */}
+                {/* Actions Panel - left-aligned content */}
                 <div className="bg-white shadow-lg rounded-lg dark:bg-gray-800 mb-6 p-6">
-                    <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300">Actions</h2>
-                    <div className="flex flex-wrap justify-center gap-3">
+                    <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300 text-left">Actions</h2>
+                    <div className="flex flex-wrap justify-start gap-3">
                         <button
                             onClick={handleFetchAllUserInfo}
                             className={`px-4 py-2 rounded-md ${darkMode ? 'bg-green-500 text-gray-100 hover:bg-green-600' : 'bg-green-500 text-white hover:bg-green-600'} transition-colors`}
@@ -576,10 +630,10 @@ const CentralDatabase = ({ darkMode }) => {
                     />
                 </div>
 
-                {/* Table Container */}
+                {/* Table Container - Full width with always-visible scrollbars */}
                 <div className="bg-white shadow-lg rounded-lg dark:bg-gray-800 overflow-hidden">
-                    <div className="overflow-x-auto" style={{ maxHeight: 'calc(100vh - 400px)' }}>
-                        <table {...getTableProps()} className="w-full border-collapse">
+                    <div className="always-show-scrollbar" style={{ maxHeight: 'calc(100vh - 400px)' }}>
+                        <table {...getTableProps()} className="w-full border-collapse" style={{ tableLayout: 'auto' }}>
                             <thead className="sticky top-0 z-10">
                                 {headerGroups.map(headerGroup => (
                                     <React.Fragment key={headerGroup.id}>
@@ -588,12 +642,11 @@ const CentralDatabase = ({ darkMode }) => {
                                             {headerGroup.headers.map(column => (
                                                 <th
                                                     {...column.getHeaderProps()}
-                                                    className="px-4 py-3 border-b border-r border-gray-200 dark:border-gray-600 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider whitespace-nowrap"
-                                                    style={{ minWidth: column.minWidth }}
+                                                    className="px-4 py-3 border-b border-r border-gray-200 dark:border-gray-600 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider"
                                                 >
                                                     <div 
                                                         {...column.getSortByToggleProps()}
-                                                        className="flex items-center justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 p-1 rounded"
+                                                        className="flex items-center justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 p-1 rounded whitespace-nowrap"
                                                     >
                                                         <span>{column.render('Header')}</span>
                                                         <span className="ml-2">
@@ -606,7 +659,7 @@ const CentralDatabase = ({ darkMode }) => {
                                                     </div>
                                                 </th>
                                             ))}
-                                            <th className="px-4 py-3 border-b border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider sticky right-0 z-20" style={{ minWidth: 100 }}>
+                                            <th className="px-4 py-3 border-b border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider sticky right-0 z-20 min-w-[100px]">
                                                 Actions
                                             </th>
                                         </tr>
@@ -637,8 +690,7 @@ const CentralDatabase = ({ darkMode }) => {
                                             {row.cells.map(cell => (
                                                 <td
                                                     {...cell.getCellProps()}
-                                                    className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-r border-gray-200 dark:border-gray-700"
-                                                    style={{ minWidth: cell.column.minWidth }}
+                                                    className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 border-b border-r border-gray-200 dark:border-gray-700"
                                                 >
                                                     {editAssetId === row.original.id ? (
                                                         <input
@@ -649,13 +701,13 @@ const CentralDatabase = ({ darkMode }) => {
                                                             className={`w-full px-2 py-1 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'border-gray-300 bg-white text-gray-900'}`}
                                                         />
                                                     ) : (
-                                                        <div className="truncate" title={cell.value}>
+                                                        <div className="min-w-max">
                                                             {cell.render('Cell')}
                                                         </div>
                                                     )}
                                                 </td>
                                             ))}
-                                            <td className="px-4 py-3 whitespace-nowrap text-sm font-medium border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 sticky right-0 z-10" style={{ minWidth: 100 }}>
+                                            <td className="px-4 py-3 whitespace-nowrap text-sm font-medium border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 sticky right-0 z-10 min-w-[100px]">
                                                 {editAssetId === row.original.id ? (
                                                     <div className="flex space-x-2">
                                                         <button
