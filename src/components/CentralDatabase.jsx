@@ -6,53 +6,6 @@ import { useTableContext } from './TableContext';
 import * as XLSX from 'xlsx';
 import axios from 'axios';
 
-// Add custom CSS for always-visible scrollbars
-const scrollbarStyles = `
-    .custom-scrollbar {
-        overflow: auto !important;
-        scrollbar-width: thin;
-        scrollbar-color: #888 #f1f1f1;
-    }
-    
-    .custom-scrollbar::-webkit-scrollbar {
-        width: 12px;
-        height: 12px;
-        display: block !important;
-    }
-    
-    .custom-scrollbar::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 10px;
-    }
-    
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: #888;
-        border-radius: 10px;
-    }
-    
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: #555;
-    }
-    
-    .dark .custom-scrollbar::-webkit-scrollbar-track {
-        background: #374151;
-    }
-    
-    .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: #6B7280;
-    }
-    
-    .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: #9CA3AF;
-    }
-    
-    .table-wrapper {
-        overflow-x: auto !important;
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch;
-    }
-`;
-
 // Default column filter component
 function DefaultColumnFilter({
     column: { filterValue, preFilteredRows, setFilter },
@@ -142,17 +95,6 @@ const CentralDatabase = ({ darkMode }) => {
     const [tableNames, setTableNames] = useState([]);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [tableToDelete, setTableToDelete] = useState('');
-
-    // Inject scrollbar styles
-    useEffect(() => {
-        const styleElement = document.createElement('style');
-        styleElement.textContent = scrollbarStyles;
-        document.head.appendChild(styleElement);
-        
-        return () => {
-            document.head.removeChild(styleElement);
-        };
-    }, []);
 
     useEffect(() => {
         fetchAssets();
@@ -452,7 +394,7 @@ const CentralDatabase = ({ darkMode }) => {
         setTableToDelete('');
     };
 
-    // Enhanced columns with minimum widths to ensure horizontal scroll
+    // Enhanced columns with filters
     const columns = React.useMemo(() => {
         const getColumnFilter = (accessor) => {
             // Use select filter for specific columns with limited options
@@ -464,62 +406,62 @@ const CentralDatabase = ({ darkMode }) => {
 
         if (view === 'default') {
             return [
-                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter, minWidth: 200 },
-                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Preferred Name', accessor: 'preferred_name', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'RBC Email', accessor: 'rbc_email', Filter: DefaultColumnFilter, minWidth: 250 },
-                { Header: 'Home Drive', accessor: 'home_drive', Filter: DefaultColumnFilter, minWidth: 200 },
-                { Header: 'Asset Number', accessor: 'asset_number', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'School', accessor: 'school', Filter: DefaultColumnFilter, minWidth: 200 },
-                { Header: 'Business Manager', accessor: 'business_manager', Filter: DefaultColumnFilter, minWidth: 200 },
-                { Header: 'Transit', accessor: 'transit', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'Location', accessor: 'location', Filter: SelectColumnFilter, minWidth: 150 },
-                { Header: 'Phone Number', accessor: 'phone_number', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Phone Serial', accessor: 'phone_serial', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'IMEI', accessor: 'phone_imei', Filter: DefaultColumnFilter, minWidth: 180 },
-                { Header: 'Phone Platform', accessor: 'phone_platform', Filter: SelectColumnFilter, minWidth: 150 },
-                { Header: 'Onboarding Date', accessor: 'onboarding_date', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Assigned Tech', accessor: 'technician', Filter: SelectColumnFilter, minWidth: 150 }
+                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter, minWidth: 150 },
+                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter, minWidth: 100 },
+                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'Preferred Name', accessor: 'preferred_name', Filter: DefaultColumnFilter, minWidth: 130 },
+                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'RBC Email', accessor: 'rbc_email', Filter: DefaultColumnFilter, minWidth: 200 },
+                { Header: 'Home Drive', accessor: 'home_drive', Filter: DefaultColumnFilter, minWidth: 150 },
+                { Header: 'Asset Number', accessor: 'asset_number', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'School', accessor: 'school', Filter: DefaultColumnFilter, minWidth: 150 },
+                { Header: 'Business Manager', accessor: 'business_manager', Filter: DefaultColumnFilter, minWidth: 150 },
+                { Header: 'Transit', accessor: 'transit', Filter: DefaultColumnFilter, minWidth: 100 },
+                { Header: 'Location', accessor: 'location', Filter: SelectColumnFilter, minWidth: 120 },
+                { Header: 'Phone Number', accessor: 'phone_number', Filter: DefaultColumnFilter, minWidth: 130 },
+                { Header: 'Phone Serial', accessor: 'phone_serial', Filter: DefaultColumnFilter, minWidth: 130 },
+                { Header: 'IMEI', accessor: 'phone_imei', Filter: DefaultColumnFilter, minWidth: 150 },
+                { Header: 'Phone Platform', accessor: 'phone_platform', Filter: SelectColumnFilter, minWidth: 130 },
+                { Header: 'Onboarding Date', accessor: 'onboarding_date', Filter: DefaultColumnFilter, minWidth: 140 },
+                { Header: 'Assigned Tech', accessor: 'technician', Filter: SelectColumnFilter, minWidth: 130 }
             ];
         } else if (view === 'DSS') {
             return [
-                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter, minWidth: 200 },
-                { Header: 'Asset Number', accessor: 'asset_number', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'RBC Email', accessor: 'rbc_email', Filter: DefaultColumnFilter, minWidth: 250 },
-                { Header: 'Onboarding Date', accessor: 'onboarding_date', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Assigned Tech', accessor: 'technician', Filter: SelectColumnFilter, minWidth: 150 },
+                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter, minWidth: 150 },
+                { Header: 'Asset Number', accessor: 'asset_number', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter, minWidth: 100 },
+                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'RBC Email', accessor: 'rbc_email', Filter: DefaultColumnFilter, minWidth: 200 },
+                { Header: 'Onboarding Date', accessor: 'onboarding_date', Filter: DefaultColumnFilter, minWidth: 140 },
+                { Header: 'Assigned Tech', accessor: 'technician', Filter: SelectColumnFilter, minWidth: 130 },
             ];
         } else if (view === 'HR') {
             return [
-                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter, minWidth: 200 },
-                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'School', accessor: 'school', Filter: DefaultColumnFilter, minWidth: 200 },
-                { Header: 'Business Manager', accessor: 'business_manager', Filter: DefaultColumnFilter, minWidth: 200 },
-                { Header: 'Transit', accessor: 'transit', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'Location', accessor: 'location', Filter: SelectColumnFilter, minWidth: 150 },
-                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter, minWidth: 150 },
+                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter, minWidth: 150 },
+                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'School', accessor: 'school', Filter: DefaultColumnFilter, minWidth: 150 },
+                { Header: 'Business Manager', accessor: 'business_manager', Filter: DefaultColumnFilter, minWidth: 150 },
+                { Header: 'Transit', accessor: 'transit', Filter: DefaultColumnFilter, minWidth: 100 },
+                { Header: 'Location', accessor: 'location', Filter: SelectColumnFilter, minWidth: 120 },
+                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter, minWidth: 100 },
             ];
         } 
         else if (view === 'Mobility') {
             return [
-                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Phone Number', accessor: 'phone_number', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Phone Serial', accessor: 'phone_serial', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'IMEI', accessor: 'phone_imei', Filter: DefaultColumnFilter, minWidth: 180 },
-                { Header: 'Phone Platform', accessor: 'phone_platform', Filter: SelectColumnFilter, minWidth: 150 },
-                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter, minWidth: 200 },
-                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter, minWidth: 150 },
+                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'Phone Number', accessor: 'phone_number', Filter: DefaultColumnFilter, minWidth: 130 },
+                { Header: 'Phone Serial', accessor: 'phone_serial', Filter: DefaultColumnFilter, minWidth: 130 },
+                { Header: 'IMEI', accessor: 'phone_imei', Filter: DefaultColumnFilter, minWidth: 150 },
+                { Header: 'Phone Platform', accessor: 'phone_platform', Filter: SelectColumnFilter, minWidth: 130 },
+                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter, minWidth: 150 },
+                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter, minWidth: 100 },
             ];
         }
         return [];
@@ -554,111 +496,90 @@ const CentralDatabase = ({ darkMode }) => {
     );
 
     return (
-        <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
-            {/* Main container with proper margins for navbar and sidebar */}
-            <div className="pt-24 pl-4 pr-4 md:pl-8 md:pr-8">
-                {/* Header Section - Fixed */}
-                <div className="mb-6">
-                    {/* Title */}
-                    <h1 className="text-3xl font-bold mb-6 text-gray-900 dark:text-gray-100">
-                        Central Database
-                    </h1>
-                    
-                    {/* Actions Panel */}
-                    <div className="bg-white shadow-lg rounded-lg dark:bg-gray-800 mb-6 p-6">
-                        <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300">Actions</h2>
-                        <div className="flex flex-wrap gap-3">
-                            <button
-                                onClick={handleFetchAllUserInfo}
-                                className={`px-4 py-2 rounded-md ${darkMode ? 'bg-green-500 text-gray-100 hover:bg-green-600' : 'bg-green-500 text-white hover:bg-green-600'} transition-colors`}
-                            >
-                                <FontAwesomeIcon icon={faSync} className="mr-2" />
-                                {loadingAllUsers ? 'Fetching...' : 'Fetch User Data'}
-                            </button>
-                            <button
-                                onClick={handleExportToExcel}
-                                className={`px-4 py-2 rounded-md ${darkMode ? 'bg-blue-600 text-gray-100 hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'} transition-colors`}
-                            >
-                                <FontAwesomeIcon icon={faFileExcel} className="mr-2" />
-                                Export to Excel
-                            </button>
-                            <button
-                                onClick={handleButtonClick}
-                                className={`px-4 py-2 rounded-md ${darkMode ? 'bg-yellow-600 text-gray-100 hover:bg-yellow-700' : 'bg-yellow-500 text-white hover:bg-yellow-600'} transition-colors`}
-                            >
-                                <FontAwesomeIcon icon={faUpload} className="mr-2"/> 
-                                Upload Excel
-                            </button>
-                            <input
-                                id="fileInput"
-                                type="file"
-                                accept=".xlsx, .xls"
-                                onChange={handleFileChange}
-                                style={{ display: 'none' }}
-                            />
+        <div className={`min-h-screen p-6 ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
+            <div className="max-w-full">
+                <h1 className="text-3xl font-bold mb-6 text-center text-gray-900 dark:text-gray-100">Central Database</h1>
+                
+                {/* Actions Panel */}
+                <div className="bg-white shadow-lg rounded-lg dark:bg-gray-800 mb-6 p-6">
+                    <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300">Actions</h2>
+                    <div className="flex flex-wrap justify-center gap-3">
+                        <button
+                            onClick={handleFetchAllUserInfo}
+                            className={`px-4 py-2 rounded-md ${darkMode ? 'bg-green-500 text-gray-100 hover:bg-green-600' : 'bg-green-500 text-white hover:bg-green-600'} transition-colors`}
+                        >
+                            <FontAwesomeIcon icon={faSync} className="mr-2" />
+                            {loadingAllUsers ? 'Fetching...' : 'Fetch User Data'}
+                        </button>
+                        <button
+                            onClick={handleExportToExcel}
+                            className={`px-4 py-2 rounded-md ${darkMode ? 'bg-blue-600 text-gray-100 hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'} transition-colors`}
+                        >
+                            <FontAwesomeIcon icon={faFileExcel} /> Export to Excel
+                        </button>
+                        <button
+                            onClick={handleButtonClick}
+                            className={`px-4 py-2 rounded-md ${darkMode ? 'bg-yellow-600 text-gray-100 hover:bg-yellow-700' : 'bg-yellow-500 text-white hover:bg-yellow-600'} transition-colors`}
+                        >
+                            <FontAwesomeIcon icon={faUpload} className="mr-2"/> Upload Excel
+                        </button>
+                        <input
+                            id="fileInput"
+                            type="file"
+                            accept=".xlsx, .xls"
+                            onChange={handleFileChange}
+                            style={{ display: 'none' }}
+                        />
+                        <select
+                            value={view}
+                            onChange={(e) => setView(e.target.value)}
+                            className={`px-4 py-2 rounded-md border ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-900'}`}
+                        >
+                            <option value="default">View All</option>
+                            <option value="DSS">DSS_ZTE</option>
+                            <option value="HR">HR</option>
+                            <option value="Mobility">Mobility</option>
+                        </select>
+                        <div className="flex items-center gap-2">
                             <select
-                                value={view}
-                                onChange={(e) => setView(e.target.value)}
+                                value={selectedTableName}
+                                onChange={handleSelectChange}
                                 className={`px-4 py-2 rounded-md border ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-900'}`}
                             >
-                                <option value="default">View All</option>
-                                <option value="DSS">DSS_ZTE</option>
-                                <option value="HR">HR</option>
-                                <option value="Mobility">Mobility</option>
+                                <option value="">All Tables</option>
+                                {tableNames.map((table) => (
+                                    <option key={table.table_name} value={table.table_name}>
+                                        {table.table_name}
+                                    </option>
+                                ))}
                             </select>
-                            <div className="flex items-center gap-2">
-                                <select
-                                    value={selectedTableName}
-                                    onChange={handleSelectChange}
-                                    className={`px-4 py-2 rounded-md border ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-900'}`}
+                            {selectedTableName && (
+                                <button
+                                    onClick={() => handleDeleteTable(selectedTableName)}
+                                    className={`px-3 py-2 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'} transition-colors`}
+                                    title="Delete Table"
                                 >
-                                    <option value="">All Tables</option>
-                                    {tableNames.map((table) => (
-                                        <option key={table.table_name} value={table.table_name}>
-                                            {table.table_name}
-                                        </option>
-                                    ))}
-                                </select>
-                                {selectedTableName && (
-                                    <button
-                                        onClick={() => handleDeleteTable(selectedTableName)}
-                                        className={`px-3 py-2 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'} transition-colors`}
-                                        title="Delete Table"
-                                    >
-                                        <FontAwesomeIcon icon={faTrashAlt} />
-                                    </button>
-                                )}
-                            </div>
+                                    <FontAwesomeIcon icon={faTrashAlt} />
+                                </button>
+                            )}
                         </div>
-                    </div>
-
-                    {/* Global Search */}
-                    <div className="bg-white shadow-lg rounded-lg dark:bg-gray-800 mb-6 p-6">
-                        <GlobalFilter
-                            preGlobalFilteredRows={preGlobalFilteredRows}
-                            globalFilter={state.globalFilter}
-                            setGlobalFilter={setGlobalFilter}
-                            darkMode={darkMode}
-                        />
                     </div>
                 </div>
 
-                {/* Table Section - Scrollable */}
+                {/* Global Search */}
+                <div className="bg-white shadow-lg rounded-lg dark:bg-gray-800 mb-6 p-6">
+                    <GlobalFilter
+                        preGlobalFilteredRows={preGlobalFilteredRows}
+                        globalFilter={state.globalFilter}
+                        setGlobalFilter={setGlobalFilter}
+                        darkMode={darkMode}
+                    />
+                </div>
+
+                {/* Table Container */}
                 <div className="bg-white shadow-lg rounded-lg dark:bg-gray-800 overflow-hidden">
-                    <div 
-                        className="custom-scrollbar" 
-                        style={{ 
-                            maxHeight: 'calc(100vh - 420px)',
-                            overflowX: 'scroll',
-                            overflowY: 'auto',
-                            position: 'relative'
-                        }}
-                    >
-                        <table 
-                            {...getTableProps()} 
-                            className="relative"
-                            style={{ minWidth: '1800px' }}
-                        >
+                    <div className="overflow-x-auto" style={{ maxHeight: 'calc(100vh - 400px)' }}>
+                        <table {...getTableProps()} className="w-full border-collapse">
                             <thead className="sticky top-0 z-10">
                                 {headerGroups.map(headerGroup => (
                                     <React.Fragment key={headerGroup.id}>
@@ -667,12 +588,12 @@ const CentralDatabase = ({ darkMode }) => {
                                             {headerGroup.headers.map(column => (
                                                 <th
                                                     {...column.getHeaderProps()}
-                                                    className="px-4 py-3 border-b border-r border-gray-200 dark:border-gray-600 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider"
-                                                    style={{ minWidth: column.minWidth || '100px' }}
+                                                    className="px-4 py-3 border-b border-r border-gray-200 dark:border-gray-600 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider whitespace-nowrap"
+                                                    style={{ minWidth: column.minWidth }}
                                                 >
                                                     <div 
                                                         {...column.getSortByToggleProps()}
-                                                        className="flex items-center justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 p-1 rounded whitespace-nowrap"
+                                                        className="flex items-center justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 p-1 rounded"
                                                     >
                                                         <span>{column.render('Header')}</span>
                                                         <span className="ml-2">
@@ -685,22 +606,20 @@ const CentralDatabase = ({ darkMode }) => {
                                                     </div>
                                                 </th>
                                             ))}
-                                            <th className="px-4 py-3 border-b border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider sticky right-0 z-20 shadow-lg" 
-                                                style={{ minWidth: '120px' }}>
+                                            <th className="px-4 py-3 border-b border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider sticky right-0 z-20" style={{ minWidth: 100 }}>
                                                 Actions
                                             </th>
                                         </tr>
                                         {/* Filter Row */}
                                         <tr className="bg-gray-100 dark:bg-gray-600">
                                             {headerGroup.headers.map(column => (
-                                                <th key={column.id} className="px-4 py-2 border-b border-r border-gray-200 dark:border-gray-600"
-                                                    style={{ minWidth: column.minWidth || '100px' }}>
+                                                <th key={column.id} className="px-4 py-2 border-b border-r border-gray-200 dark:border-gray-600">
                                                     <div>
                                                         {column.canFilter ? column.render('Filter') : null}
                                                     </div>
                                                 </th>
                                             ))}
-                                            <th className="px-4 py-2 border-b border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-600 sticky right-0 z-20 shadow-lg">
+                                            <th className="px-4 py-2 border-b border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-600 sticky right-0 z-20">
                                                 {/* Actions column - no filter */}
                                             </th>
                                         </tr>
@@ -718,8 +637,8 @@ const CentralDatabase = ({ darkMode }) => {
                                             {row.cells.map(cell => (
                                                 <td
                                                     {...cell.getCellProps()}
-                                                    className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 border-b border-r border-gray-200 dark:border-gray-700"
-                                                    style={{ minWidth: cell.column.minWidth || '100px' }}
+                                                    className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-r border-gray-200 dark:border-gray-700"
+                                                    style={{ minWidth: cell.column.minWidth }}
                                                 >
                                                     {editAssetId === row.original.id ? (
                                                         <input
@@ -730,14 +649,13 @@ const CentralDatabase = ({ darkMode }) => {
                                                             className={`w-full px-2 py-1 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'border-gray-300 bg-white text-gray-900'}`}
                                                         />
                                                     ) : (
-                                                        <div className="whitespace-nowrap">
-                                                            {cell.render('Cell') || '-'}
+                                                        <div className="truncate" title={cell.value}>
+                                                            {cell.render('Cell')}
                                                         </div>
                                                     )}
                                                 </td>
                                             ))}
-                                            <td className="px-4 py-3 whitespace-nowrap text-sm font-medium border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 sticky right-0 z-10 shadow-lg" 
-                                                style={{ minWidth: '120px' }}>
+                                            <td className="px-4 py-3 whitespace-nowrap text-sm font-medium border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 sticky right-0 z-10" style={{ minWidth: 100 }}>
                                                 {editAssetId === row.original.id ? (
                                                     <div className="flex space-x-2">
                                                         <button
