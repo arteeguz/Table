@@ -18,8 +18,8 @@ function DefaultColumnFilter({
             onChange={e => {
                 setFilter(e.target.value || undefined)
             }}
-            placeholder="Search..."
-            className="w-full px-1 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
+            placeholder={`Search ${count} records...`}
+            className="w-full px-2 py-1 text-xs border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
         />
     )
 }
@@ -42,7 +42,7 @@ function SelectColumnFilter({
             onChange={e => {
                 setFilter(e.target.value || undefined)
             }}
-            className="w-full px-1 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
+            className="w-full px-2 py-1 text-xs border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
         >
             <option value="">All</option>
             {options.map((option, i) => (
@@ -64,7 +64,7 @@ function GlobalFilter({
     const count = preGlobalFilteredRows.length
 
     return (
-        <div className="flex items-center justify-center">
+        <div className="flex items-center">
             <FontAwesomeIcon icon={faSearch} className="mr-2 text-gray-500" />
             <input
                 value={globalFilter || ''}
@@ -72,12 +72,12 @@ function GlobalFilter({
                     setGlobalFilter(e.target.value || undefined)
                 }}
                 placeholder={`Search all ${count} records...`}
-                className={`px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                className={`px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     darkMode 
                         ? 'bg-gray-800 border-gray-600 text-gray-300' 
                         : 'bg-white border-gray-300 text-gray-900'
                 }`}
-                style={{ width: 'min(90vw, 400px)' }}
+                style={{ width: '300px' }}
             />
         </div>
     )
@@ -394,70 +394,78 @@ const CentralDatabase = ({ darkMode }) => {
         setTableToDelete('');
     };
 
-    // Enhanced columns with filters - Excel-like compact design
+    // Enhanced columns with filters
     const columns = React.useMemo(() => {
+        const getColumnFilter = (accessor) => {
+            // Use select filter for specific columns with limited options
+            if (['business_group', 'technician', 'phone_platform', 'location'].includes(accessor)) {
+                return SelectColumnFilter;
+            }
+            return DefaultColumnFilter;
+        };
+
         if (view === 'default') {
             return [
-                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter },
-                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter },
-                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter },
-                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter },
-                { Header: 'Preferred Name', accessor: 'preferred_name', Filter: DefaultColumnFilter },
-                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter },
-                { Header: 'RBC Email', accessor: 'rbc_email', Filter: DefaultColumnFilter },
-                { Header: 'Home Drive', accessor: 'home_drive', Filter: DefaultColumnFilter },
-                { Header: 'Asset Number', accessor: 'asset_number', Filter: DefaultColumnFilter },
-                { Header: 'School', accessor: 'school', Filter: DefaultColumnFilter },
-                { Header: 'Business Manager', accessor: 'business_manager', Filter: DefaultColumnFilter },
-                { Header: 'Transit', accessor: 'transit', Filter: DefaultColumnFilter },
-                { Header: 'Location', accessor: 'location', Filter: SelectColumnFilter },
-                { Header: 'Phone Number', accessor: 'phone_number', Filter: DefaultColumnFilter },
-                { Header: 'Phone Serial', accessor: 'phone_serial', Filter: DefaultColumnFilter },
-                { Header: 'IMEI', accessor: 'phone_imei', Filter: DefaultColumnFilter },
-                { Header: 'Phone Platform', accessor: 'phone_platform', Filter: SelectColumnFilter },
-                { Header: 'Onboarding Date', accessor: 'onboarding_date', Filter: DefaultColumnFilter },
-                { Header: 'Assigned Tech', accessor: 'technician', Filter: SelectColumnFilter }
+                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter, minWidth: 150 },
+                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter, minWidth: 100 },
+                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'Preferred Name', accessor: 'preferred_name', Filter: DefaultColumnFilter, minWidth: 130 },
+                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'RBC Email', accessor: 'rbc_email', Filter: DefaultColumnFilter, minWidth: 200 },
+                { Header: 'Home Drive', accessor: 'home_drive', Filter: DefaultColumnFilter, minWidth: 150 },
+                { Header: 'Asset Number', accessor: 'asset_number', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'School', accessor: 'school', Filter: DefaultColumnFilter, minWidth: 150 },
+                { Header: 'Business Manager', accessor: 'business_manager', Filter: DefaultColumnFilter, minWidth: 150 },
+                { Header: 'Transit', accessor: 'transit', Filter: DefaultColumnFilter, minWidth: 100 },
+                { Header: 'Location', accessor: 'location', Filter: SelectColumnFilter, minWidth: 120 },
+                { Header: 'Phone Number', accessor: 'phone_number', Filter: DefaultColumnFilter, minWidth: 130 },
+                { Header: 'Phone Serial', accessor: 'phone_serial', Filter: DefaultColumnFilter, minWidth: 130 },
+                { Header: 'IMEI', accessor: 'phone_imei', Filter: DefaultColumnFilter, minWidth: 150 },
+                { Header: 'Phone Platform', accessor: 'phone_platform', Filter: SelectColumnFilter, minWidth: 130 },
+                { Header: 'Onboarding Date', accessor: 'onboarding_date', Filter: DefaultColumnFilter, minWidth: 140 },
+                { Header: 'Assigned Tech', accessor: 'technician', Filter: SelectColumnFilter, minWidth: 130 }
             ];
         } else if (view === 'DSS') {
             return [
-                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter },
-                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter },
-                { Header: 'Asset Number', accessor: 'asset_number', Filter: DefaultColumnFilter },
-                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter },
-                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter },
-                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter },
-                { Header: 'RBC Email', accessor: 'rbc_email', Filter: DefaultColumnFilter },
-                { Header: 'Onboarding Date', accessor: 'onboarding_date', Filter: DefaultColumnFilter },
-                { Header: 'Assigned Tech', accessor: 'technician', Filter: SelectColumnFilter },
+                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter, minWidth: 150 },
+                { Header: 'Asset Number', accessor: 'asset_number', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter, minWidth: 100 },
+                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'RBC Email', accessor: 'rbc_email', Filter: DefaultColumnFilter, minWidth: 200 },
+                { Header: 'Onboarding Date', accessor: 'onboarding_date', Filter: DefaultColumnFilter, minWidth: 140 },
+                { Header: 'Assigned Tech', accessor: 'technician', Filter: SelectColumnFilter, minWidth: 130 },
             ];
         } else if (view === 'HR') {
             return [
-                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter },
-                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter },
-                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter },
-                { Header: 'School', accessor: 'school', Filter: DefaultColumnFilter },
-                { Header: 'Business Manager', accessor: 'business_manager', Filter: DefaultColumnFilter },
-                { Header: 'Transit', accessor: 'transit', Filter: DefaultColumnFilter },
-                { Header: 'Location', accessor: 'location', Filter: SelectColumnFilter },
-                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter },
-                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter },
+                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter, minWidth: 150 },
+                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'School', accessor: 'school', Filter: DefaultColumnFilter, minWidth: 150 },
+                { Header: 'Business Manager', accessor: 'business_manager', Filter: DefaultColumnFilter, minWidth: 150 },
+                { Header: 'Transit', accessor: 'transit', Filter: DefaultColumnFilter, minWidth: 100 },
+                { Header: 'Location', accessor: 'location', Filter: SelectColumnFilter, minWidth: 120 },
+                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter, minWidth: 100 },
             ];
         } 
         else if (view === 'Mobility') {
             return [
-                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter },
-                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter },
-                { Header: 'Phone Number', accessor: 'phone_number', Filter: DefaultColumnFilter },
-                { Header: 'Phone Serial', accessor: 'phone_serial', Filter: DefaultColumnFilter },
-                { Header: 'IMEI', accessor: 'phone_imei', Filter: DefaultColumnFilter },
-                { Header: 'Phone Platform', accessor: 'phone_platform', Filter: SelectColumnFilter },
-                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter },
-                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter },
-                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter },
+                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'Phone Number', accessor: 'phone_number', Filter: DefaultColumnFilter, minWidth: 130 },
+                { Header: 'Phone Serial', accessor: 'phone_serial', Filter: DefaultColumnFilter, minWidth: 130 },
+                { Header: 'IMEI', accessor: 'phone_imei', Filter: DefaultColumnFilter, minWidth: 150 },
+                { Header: 'Phone Platform', accessor: 'phone_platform', Filter: SelectColumnFilter, minWidth: 130 },
+                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter, minWidth: 120 },
+                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter, minWidth: 150 },
+                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter, minWidth: 100 },
             ];
         }
         return [];
-    }, [view]);
+    }, [view, darkMode]);
 
     // Default column configuration
     const defaultColumn = React.useMemo(
@@ -488,205 +496,107 @@ const CentralDatabase = ({ darkMode }) => {
     );
 
     return (
-        <div className={`min-h-screen w-full ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
-            {/* Global Responsive Styles */}
-            <style>
-                {`
-                /* Responsive font and spacing system */
-                :root {
-                    --responsive-text-xs: clamp(0.7rem, 0.5vw + 0.6rem, 0.85rem);
-                    --responsive-text-sm: clamp(0.8rem, 0.7vw + 0.7rem, 1rem);
-                    --responsive-text-base: clamp(0.9rem, 1vw + 0.8rem, 1.2rem);
-                    --responsive-text-lg: clamp(1.1rem, 1.5vw + 1rem, 1.5rem);
-                    --responsive-text-xl: clamp(1.3rem, 2vw + 1.2rem, 2rem);
-                    --responsive-text-2xl: clamp(1.6rem, 2.5vw + 1.4rem, 2.5rem);
-                    --responsive-spacing-1: clamp(0.25rem, 0.5vw + 0.2rem, 0.5rem);
-                    --responsive-spacing-2: clamp(0.5rem, 1vw + 0.4rem, 1rem);
-                    --responsive-spacing-3: clamp(0.75rem, 1.5vw + 0.6rem, 1.5rem);
-                    --responsive-spacing-4: clamp(1rem, 2vw + 0.8rem, 2rem);
-                }
-
-                /* Excel-like scrollbars */
-                .excel-scrollbar::-webkit-scrollbar {
-                    width: clamp(8px, 1vw, 16px);
-                    height: clamp(8px, 1vw, 16px);
-                }
-                .excel-scrollbar::-webkit-scrollbar-track {
-                    background: #f1f1f1;
-                    border-radius: 4px;
-                }
-                .excel-scrollbar::-webkit-scrollbar-thumb {
-                    background: #c1c1c1;
-                    border-radius: 4px;
-                }
-                .excel-scrollbar::-webkit-scrollbar-thumb:hover {
-                    background: #a8a8a8;
-                }
-                .excel-scrollbar::-webkit-scrollbar-corner {
-                    background: #f1f1f1;
-                }
-
-                /* Responsive table cells */
-                .responsive-cell {
-                    font-size: var(--responsive-text-xs);
-                    padding: var(--responsive-spacing-1) var(--responsive-spacing-2);
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                }
-
-                /* Button responsive sizing */
-                .responsive-btn {
-                    font-size: var(--responsive-text-sm);
-                    padding: var(--responsive-spacing-1) var(--responsive-spacing-2);
-                }
-
-                /* Ensure minimum visibility at high zoom */
-                @media (max-height: 400px) {
-                    .header-section {
-                        padding: 0.5rem;
-                    }
-                    .title {
-                        font-size: 1.2rem !important;
-                        margin-bottom: 0.5rem;
-                    }
-                    .table-container {
-                        height: calc(100vh - 150px) !important;
-                    }
-                }
-                `}
-            </style>
-
-            {/* Centered Header Section */}
-            <div className="header-section w-full bg-white dark:bg-gray-800 shadow-md border-b-2 border-gray-200 dark:border-gray-700" style={{ padding: 'var(--responsive-spacing-4)' }}>
-                <div className="flex flex-col items-center justify-center w-full max-w-none">
-                    {/* Title - Always Centered */}
-                    <h1 
-                        className="title font-bold text-center text-gray-900 dark:text-gray-100 mb-4"
-                        style={{ fontSize: 'var(--responsive-text-2xl)' }}
-                    >
-                        Central Database
-                    </h1>
-                    
-                    {/* Action Buttons - Centered and Responsive */}
-                    <div className="w-full max-w-6xl">
-                        <div className="flex flex-wrap justify-center items-center gap-2 mb-4">
-                            <button
-                                onClick={handleFetchAllUserInfo}
-                                className={`responsive-btn rounded transition-colors ${darkMode ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-green-500 text-white hover:bg-green-600'}`}
-                            >
-                                <FontAwesomeIcon icon={faSync} className="mr-1" />
-                                {loadingAllUsers ? 'Fetching...' : 'Fetch Data'}
-                            </button>
-                            <button
-                                onClick={handleExportToExcel}
-                                className={`responsive-btn rounded transition-colors ${darkMode ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
-                            >
-                                <FontAwesomeIcon icon={faFileExcel} className="mr-1" />
-                                Export
-                            </button>
-                            <button
-                                onClick={handleButtonClick}
-                                className={`responsive-btn rounded transition-colors ${darkMode ? 'bg-yellow-600 text-white hover:bg-yellow-700' : 'bg-yellow-500 text-white hover:bg-yellow-600'}`}
-                            >
-                                <FontAwesomeIcon icon={faUpload} className="mr-1"/>
-                                Upload
-                            </button>
-                            <input
-                                id="fileInput"
-                                type="file"
-                                accept=".xlsx, .xls"
-                                onChange={handleFileChange}
-                                style={{ display: 'none' }}
-                            />
+        <div className={`min-h-screen p-6 ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
+            <div className="max-w-full">
+                <h1 className="text-3xl font-bold mb-6 text-center text-gray-900 dark:text-gray-100">Central Database</h1>
+                
+                {/* Actions Panel */}
+                <div className="bg-white shadow-lg rounded-lg dark:bg-gray-800 mb-6 p-6">
+                    <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300">Actions</h2>
+                    <div className="flex flex-wrap justify-center gap-3">
+                        <button
+                            onClick={handleFetchAllUserInfo}
+                            className={`px-4 py-2 rounded-md ${darkMode ? 'bg-green-500 text-gray-100 hover:bg-green-600' : 'bg-green-500 text-white hover:bg-green-600'} transition-colors`}
+                        >
+                            <FontAwesomeIcon icon={faSync} className="mr-2" />
+                            {loadingAllUsers ? 'Fetching...' : 'Fetch User Data'}
+                        </button>
+                        <button
+                            onClick={handleExportToExcel}
+                            className={`px-4 py-2 rounded-md ${darkMode ? 'bg-blue-600 text-gray-100 hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'} transition-colors`}
+                        >
+                            <FontAwesomeIcon icon={faFileExcel} /> Export to Excel
+                        </button>
+                        <button
+                            onClick={handleButtonClick}
+                            className={`px-4 py-2 rounded-md ${darkMode ? 'bg-yellow-600 text-gray-100 hover:bg-yellow-700' : 'bg-yellow-500 text-white hover:bg-yellow-600'} transition-colors`}
+                        >
+                            <FontAwesomeIcon icon={faUpload} className="mr-2"/> Upload Excel
+                        </button>
+                        <input
+                            id="fileInput"
+                            type="file"
+                            accept=".xlsx, .xls"
+                            onChange={handleFileChange}
+                            style={{ display: 'none' }}
+                        />
+                        <select
+                            value={view}
+                            onChange={(e) => setView(e.target.value)}
+                            className={`px-4 py-2 rounded-md border ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-900'}`}
+                        >
+                            <option value="default">View All</option>
+                            <option value="DSS">DSS_ZTE</option>
+                            <option value="HR">HR</option>
+                            <option value="Mobility">Mobility</option>
+                        </select>
+                        <div className="flex items-center gap-2">
                             <select
-                                value={view}
-                                onChange={(e) => setView(e.target.value)}
-                                className={`responsive-btn rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-900'}`}
+                                value={selectedTableName}
+                                onChange={handleSelectChange}
+                                className={`px-4 py-2 rounded-md border ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-900'}`}
                             >
-                                <option value="default">View All</option>
-                                <option value="DSS">DSS_ZTE</option>
-                                <option value="HR">HR</option>
-                                <option value="Mobility">Mobility</option>
+                                <option value="">All Tables</option>
+                                {tableNames.map((table) => (
+                                    <option key={table.table_name} value={table.table_name}>
+                                        {table.table_name}
+                                    </option>
+                                ))}
                             </select>
-                            <div className="flex items-center gap-1">
-                                <select
-                                    value={selectedTableName}
-                                    onChange={handleSelectChange}
-                                    className={`responsive-btn rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-900'}`}
+                            {selectedTableName && (
+                                <button
+                                    onClick={() => handleDeleteTable(selectedTableName)}
+                                    className={`px-3 py-2 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'} transition-colors`}
+                                    title="Delete Table"
                                 >
-                                    <option value="">All Tables</option>
-                                    {tableNames.map((table) => (
-                                        <option key={table.table_name} value={table.table_name}>
-                                            {table.table_name}
-                                        </option>
-                                    ))}
-                                </select>
-                                {selectedTableName && (
-                                    <button
-                                        onClick={() => handleDeleteTable(selectedTableName)}
-                                        className={`responsive-btn rounded transition-colors ${darkMode ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
-                                        title="Delete Table"
-                                    >
-                                        <FontAwesomeIcon icon={faTrashAlt} />
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                        
-                        {/* Global Search - Centered */}
-                        <div className="flex justify-center">
-                            <GlobalFilter
-                                preGlobalFilteredRows={preGlobalFilteredRows}
-                                globalFilter={state.globalFilter}
-                                setGlobalFilter={setGlobalFilter}
-                                darkMode={darkMode}
-                            />
+                                    <FontAwesomeIcon icon={faTrashAlt} />
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Full Width Responsive Table Container */}
-            <div 
-                className="table-container w-full"
-                style={{ 
-                    height: 'calc(100vh - 200px)',
-                    minHeight: '300px',
-                    padding: 'var(--responsive-spacing-2)'
-                }}
-            >
-                <div className="w-full h-full border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 shadow-lg overflow-hidden">
-                    <div className="excel-scrollbar w-full h-full overflow-auto">
-                        <table 
-                            {...getTableProps()} 
-                            className="w-full border-collapse"
-                            style={{ 
-                                tableLayout: 'auto',
-                                minWidth: '100%'
-                            }}
-                        >
-                            <thead className="sticky top-0 z-20 bg-gray-100 dark:bg-gray-700">
+                {/* Global Search */}
+                <div className="bg-white shadow-lg rounded-lg dark:bg-gray-800 mb-6 p-6">
+                    <GlobalFilter
+                        preGlobalFilteredRows={preGlobalFilteredRows}
+                        globalFilter={state.globalFilter}
+                        setGlobalFilter={setGlobalFilter}
+                        darkMode={darkMode}
+                    />
+                </div>
+
+                {/* Table Container */}
+                <div className="bg-white shadow-lg rounded-lg dark:bg-gray-800 overflow-hidden">
+                    <div className="overflow-x-auto" style={{ maxHeight: 'calc(100vh - 400px)' }}>
+                        <table {...getTableProps()} className="w-full border-collapse">
+                            <thead className="sticky top-0 z-10">
                                 {headerGroups.map(headerGroup => (
                                     <React.Fragment key={headerGroup.id}>
                                         {/* Header Row */}
-                                        <tr {...headerGroup.getHeaderGroupProps()}>
+                                        <tr {...headerGroup.getHeaderGroupProps()} className="bg-gray-50 dark:bg-gray-700">
                                             {headerGroup.headers.map(column => (
                                                 <th
                                                     {...column.getHeaderProps()}
-                                                    className="border-r border-b border-gray-300 dark:border-gray-600 text-left font-semibold text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600"
-                                                    style={{
-                                                        fontSize: 'var(--responsive-text-xs)',
-                                                        padding: 'var(--responsive-spacing-1) var(--responsive-spacing-2)',
-                                                        minWidth: 'fit-content'
-                                                    }}
+                                                    className="px-4 py-3 border-b border-r border-gray-200 dark:border-gray-600 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider whitespace-nowrap"
+                                                    style={{ minWidth: column.minWidth }}
                                                 >
                                                     <div 
                                                         {...column.getSortByToggleProps()}
-                                                        className="flex items-center justify-between cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-500 px-1 py-1 rounded"
+                                                        className="flex items-center justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 p-1 rounded"
                                                     >
-                                                        <span className="font-medium">{column.render('Header')}</span>
-                                                        <span className="ml-1">
+                                                        <span>{column.render('Header')}</span>
+                                                        <span className="ml-2">
                                                             {column.isSorted
                                                                 ? column.isSortedDesc
                                                                     ? <FontAwesomeIcon icon={faSortDown} className="text-blue-500" />
@@ -696,42 +606,39 @@ const CentralDatabase = ({ darkMode }) => {
                                                     </div>
                                                 </th>
                                             ))}
-                                            <th className="border-r border-b border-gray-300 dark:border-gray-600 bg-gray-200 dark:bg-gray-600 text-left font-semibold text-gray-700 dark:text-gray-300 sticky right-0 z-30"
-                                                style={{
-                                                    fontSize: 'var(--responsive-text-xs)',
-                                                    padding: 'var(--responsive-spacing-1) var(--responsive-spacing-2)',
-                                                    minWidth: '100px'
-                                                }}
-                                            >
+                                            <th className="px-4 py-3 border-b border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider sticky right-0 z-20" style={{ minWidth: 100 }}>
                                                 Actions
                                             </th>
                                         </tr>
                                         {/* Filter Row */}
-                                        <tr className="bg-gray-50 dark:bg-gray-700">
+                                        <tr className="bg-gray-100 dark:bg-gray-600">
                                             {headerGroup.headers.map(column => (
-                                                <th key={column.id} className="border-r border-b border-gray-300 dark:border-gray-600" style={{ padding: 'var(--responsive-spacing-1)' }}>
-                                                    {column.canFilter ? column.render('Filter') : null}
+                                                <th key={column.id} className="px-4 py-2 border-b border-r border-gray-200 dark:border-gray-600">
+                                                    <div>
+                                                        {column.canFilter ? column.render('Filter') : null}
+                                                    </div>
                                                 </th>
                                             ))}
-                                            <th className="border-r border-b border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 sticky right-0 z-30" style={{ padding: 'var(--responsive-spacing-1)' }}>
+                                            <th className="px-4 py-2 border-b border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-600 sticky right-0 z-20">
                                                 {/* Actions column - no filter */}
                                             </th>
                                         </tr>
                                     </React.Fragment>
                                 ))}
                             </thead>
-                            <tbody {...getTableBodyProps()}>
-                                {rows.map((row, index) => {
+                            <tbody {...getTableBodyProps()} className="bg-white dark:bg-gray-800">
+                                {rows.map(row => {
                                     prepareRow(row);
                                     return (
                                         <tr
                                             {...row.getRowProps()}
-                                            className={`${index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-750'} hover:bg-blue-50 dark:hover:bg-gray-700 ${editAssetId === row.original.id ? 'bg-blue-100 dark:bg-blue-900' : ''}`}
+                                            className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${editAssetId === row.original.id ? 'bg-blue-50 dark:bg-gray-600' : ''}`}
                                         >
                                             {row.cells.map(cell => (
                                                 <td
                                                     {...cell.getCellProps()}
-                                                    className="responsive-cell border-r border-b border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100"
+                                                    className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-r border-gray-200 dark:border-gray-700"
+                                                    style={{ minWidth: cell.column.minWidth }}
                                                 >
                                                     {editAssetId === row.original.id ? (
                                                         <input
@@ -739,50 +646,42 @@ const CentralDatabase = ({ darkMode }) => {
                                                             name={cell.column.id}
                                                             value={editValues[cell.column.id] || ''}
                                                             onChange={handleChange}
-                                                            className={`w-full px-1 py-0.5 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'border-gray-300 bg-white text-gray-900'}`}
-                                                            style={{ 
-                                                                fontSize: 'var(--responsive-text-xs)',
-                                                                minWidth: '60px'
-                                                            }}
+                                                            className={`w-full px-2 py-1 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'border-gray-300 bg-white text-gray-900'}`}
                                                         />
                                                     ) : (
-                                                        <div className="overflow-hidden text-ellipsis" title={cell.value}>
+                                                        <div className="truncate" title={cell.value}>
                                                             {cell.render('Cell')}
                                                         </div>
                                                     )}
                                                 </td>
                                             ))}
-                                            <td className="responsive-cell border-r border-b border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 sticky right-0 z-10">
+                                            <td className="px-4 py-3 whitespace-nowrap text-sm font-medium border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 sticky right-0 z-10" style={{ minWidth: 100 }}>
                                                 {editAssetId === row.original.id ? (
-                                                    <div className="flex space-x-1">
+                                                    <div className="flex space-x-2">
                                                         <button
                                                             onClick={handleSaveClick}
-                                                            className={`px-1.5 py-0.5 rounded transition-colors ${darkMode ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-green-500 text-white hover:bg-green-600'}`}
-                                                            style={{ fontSize: 'var(--responsive-text-xs)' }}
+                                                            className={`px-3 py-1 rounded-md text-xs ${darkMode ? 'bg-green-600 text-gray-100 hover:bg-green-700' : 'bg-green-500 text-white hover:bg-green-600'} transition-colors`}
                                                         >
                                                             <FontAwesomeIcon icon={faSave} />
                                                         </button>
                                                         <button
                                                             onClick={handleCancelEdit}
-                                                            className={`px-1.5 py-0.5 rounded transition-colors ${darkMode ? 'bg-gray-600 text-white hover:bg-gray-700' : 'bg-gray-500 text-white hover:bg-gray-600'}`}
-                                                            style={{ fontSize: 'var(--responsive-text-xs)' }}
+                                                            className={`px-3 py-1 rounded-md text-xs ${darkMode ? 'bg-gray-600 text-gray-100 hover:bg-gray-700' : 'bg-gray-500 text-white hover:bg-gray-600'} transition-colors`}
                                                         >
                                                             <FontAwesomeIcon icon={faTimes} />
                                                         </button>
                                                     </div>
                                                 ) : (
-                                                    <div className="flex space-x-1">
+                                                    <div className="flex space-x-2">
                                                         <button
                                                             onClick={() => handleEditClick(row.original)}
-                                                            className={`px-1.5 py-0.5 rounded transition-colors ${darkMode ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
-                                                            style={{ fontSize: 'var(--responsive-text-xs)' }}
+                                                            className={`px-3 py-1 rounded-md text-xs ${darkMode ? 'bg-blue-600 text-gray-100 hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'} transition-colors`}
                                                         >
                                                             <FontAwesomeIcon icon={faEdit} />
                                                         </button>
                                                         <button
                                                             onClick={() => handleDelete(row.original.id)}
-                                                            className={`px-1.5 py-0.5 rounded transition-colors ${darkMode ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
-                                                            style={{ fontSize: 'var(--responsive-text-xs)' }}
+                                                            className={`px-3 py-1 rounded-md text-xs ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'} transition-colors`}
                                                         >
                                                             <FontAwesomeIcon icon={faTrashAlt} />
                                                         </button>
@@ -796,12 +695,9 @@ const CentralDatabase = ({ darkMode }) => {
                         </table>
                     </div>
                 </div>
-                
+
                 {/* Results Summary */}
-                <div 
-                    className="mt-2 text-center bg-gray-100 dark:bg-gray-700 py-1 rounded text-gray-600 dark:text-gray-400"
-                    style={{ fontSize: 'var(--responsive-text-xs)' }}
-                >
+                <div className="mt-4 text-sm text-gray-600 dark:text-gray-400 text-center">
                     Showing {rows.length} of {preGlobalFilteredRows.length} results
                 </div>
             </div>
