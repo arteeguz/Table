@@ -18,9 +18,8 @@ function DefaultColumnFilter({
             onChange={e => {
                 setFilter(e.target.value || undefined)
             }}
-            placeholder={`Search...`}
+            placeholder="Search..."
             className="w-full px-1 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
-            style={{ minWidth: '60px', fontSize: '11px' }}
         />
     )
 }
@@ -44,7 +43,6 @@ function SelectColumnFilter({
                 setFilter(e.target.value || undefined)
             }}
             className="w-full px-1 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
-            style={{ minWidth: '60px', fontSize: '11px' }}
         >
             <option value="">All</option>
             {options.map((option, i) => (
@@ -66,7 +64,7 @@ function GlobalFilter({
     const count = preGlobalFilteredRows.length
 
     return (
-        <div className="flex items-center">
+        <div className="flex items-center justify-center">
             <FontAwesomeIcon icon={faSearch} className="mr-2 text-gray-500" />
             <input
                 value={globalFilter || ''}
@@ -79,7 +77,7 @@ function GlobalFilter({
                         ? 'bg-gray-800 border-gray-600 text-gray-300' 
                         : 'bg-white border-gray-300 text-gray-900'
                 }`}
-                style={{ width: '300px' }}
+                style={{ width: 'min(90vw, 400px)' }}
             />
         </div>
     )
@@ -490,257 +488,321 @@ const CentralDatabase = ({ darkMode }) => {
     );
 
     return (
-        <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
-            {/* Global styles for zoom centering */}
+        <div className={`min-h-screen w-full ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
+            {/* Global Responsive Styles */}
             <style>
                 {`
-                /* Help with zoom centering behavior */
-                html, body {
-                    zoom-origin: center;
-                    transform-origin: center center;
+                /* Responsive font and spacing system */
+                :root {
+                    --responsive-text-xs: clamp(0.7rem, 0.5vw + 0.6rem, 0.85rem);
+                    --responsive-text-sm: clamp(0.8rem, 0.7vw + 0.7rem, 1rem);
+                    --responsive-text-base: clamp(0.9rem, 1vw + 0.8rem, 1.2rem);
+                    --responsive-text-lg: clamp(1.1rem, 1.5vw + 1rem, 1.5rem);
+                    --responsive-text-xl: clamp(1.3rem, 2vw + 1.2rem, 2rem);
+                    --responsive-text-2xl: clamp(1.6rem, 2.5vw + 1.4rem, 2.5rem);
+                    --responsive-spacing-1: clamp(0.25rem, 0.5vw + 0.2rem, 0.5rem);
+                    --responsive-spacing-2: clamp(0.5rem, 1vw + 0.4rem, 1rem);
+                    --responsive-spacing-3: clamp(0.75rem, 1.5vw + 0.6rem, 1.5rem);
+                    --responsive-spacing-4: clamp(1rem, 2vw + 0.8rem, 2rem);
                 }
-                /* Main content area should be the zoom focus */
-                .main-content-area {
-                    position: relative;
-                    z-index: 1;
-                    transform-origin: center center;
+
+                /* Excel-like scrollbars */
+                .excel-scrollbar::-webkit-scrollbar {
+                    width: clamp(8px, 1vw, 16px);
+                    height: clamp(8px, 1vw, 16px);
                 }
-                /* Force scrollbars to always be visible */
-                .table-container::-webkit-scrollbar {
-                    width: 14px;
-                    height: 14px;
-                }
-                .table-container::-webkit-scrollbar-track {
+                .excel-scrollbar::-webkit-scrollbar-track {
                     background: #f1f1f1;
-                    border-radius: 6px;
+                    border-radius: 4px;
                 }
-                .table-container::-webkit-scrollbar-thumb {
-                    background: #888;
-                    border-radius: 6px;
+                .excel-scrollbar::-webkit-scrollbar-thumb {
+                    background: #c1c1c1;
+                    border-radius: 4px;
                 }
-                .table-container::-webkit-scrollbar-thumb:hover {
-                    background: #555;
+                .excel-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: #a8a8a8;
                 }
-                .table-container::-webkit-scrollbar-corner {
+                .excel-scrollbar::-webkit-scrollbar-corner {
                     background: #f1f1f1;
+                }
+
+                /* Responsive table cells */
+                .responsive-cell {
+                    font-size: var(--responsive-text-xs);
+                    padding: var(--responsive-spacing-1) var(--responsive-spacing-2);
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+
+                /* Button responsive sizing */
+                .responsive-btn {
+                    font-size: var(--responsive-text-sm);
+                    padding: var(--responsive-spacing-1) var(--responsive-spacing-2);
+                }
+
+                /* Ensure minimum visibility at high zoom */
+                @media (max-height: 400px) {
+                    .header-section {
+                        padding: 0.5rem;
+                    }
+                    .title {
+                        font-size: 1.2rem !important;
+                        margin-bottom: 0.5rem;
+                    }
+                    .table-container {
+                        height: calc(100vh - 150px) !important;
+                    }
                 }
                 `}
             </style>
-            {/* Fixed Header - Excel-like with proper centering */}
-            <div className="main-content-area w-full bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 p-4 relative z-10">
-                <h1 className="text-2xl font-bold mb-4 text-center text-gray-900 dark:text-gray-100">Central Database</h1>
-                
-                {/* Compact Actions Panel */}
-                <div className="mb-4">
-                    <div className="flex flex-wrap justify-center items-center gap-2 mb-3">
-                        <button
-                            onClick={handleFetchAllUserInfo}
-                            className={`px-3 py-1.5 text-sm rounded ${darkMode ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-green-500 text-white hover:bg-green-600'} transition-colors`}
-                        >
-                            <FontAwesomeIcon icon={faSync} className="mr-1" />
-                            {loadingAllUsers ? 'Fetching...' : 'Fetch Data'}
-                        </button>
-                        <button
-                            onClick={handleExportToExcel}
-                            className={`px-3 py-1.5 text-sm rounded ${darkMode ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'} transition-colors`}
-                        >
-                            <FontAwesomeIcon icon={faFileExcel} className="mr-1" />
-                            Export
-                        </button>
-                        <button
-                            onClick={handleButtonClick}
-                            className={`px-3 py-1.5 text-sm rounded ${darkMode ? 'bg-yellow-600 text-white hover:bg-yellow-700' : 'bg-yellow-500 text-white hover:bg-yellow-600'} transition-colors`}
-                        >
-                            <FontAwesomeIcon icon={faUpload} className="mr-1"/>
-                            Upload
-                        </button>
-                        <input
-                            id="fileInput"
-                            type="file"
-                            accept=".xlsx, .xls"
-                            onChange={handleFileChange}
-                            style={{ display: 'none' }}
-                        />
-                        <select
-                            value={view}
-                            onChange={(e) => setView(e.target.value)}
-                            className={`px-3 py-1.5 text-sm rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-900'}`}
-                        >
-                            <option value="default">View All</option>
-                            <option value="DSS">DSS_ZTE</option>
-                            <option value="HR">HR</option>
-                            <option value="Mobility">Mobility</option>
-                        </select>
-                        <div className="flex items-center gap-1">
-                            <select
-                                value={selectedTableName}
-                                onChange={handleSelectChange}
-                                className={`px-3 py-1.5 text-sm rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-900'}`}
-                            >
-                                <option value="">All Tables</option>
-                                {tableNames.map((table) => (
-                                    <option key={table.table_name} value={table.table_name}>
-                                        {table.table_name}
-                                    </option>
-                                ))}
-                            </select>
-                            {selectedTableName && (
-                                <button
-                                    onClick={() => handleDeleteTable(selectedTableName)}
-                                    className={`px-2 py-1.5 text-sm rounded ${darkMode ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'} transition-colors`}
-                                    title="Delete Table"
-                                >
-                                    <FontAwesomeIcon icon={faTrashAlt} />
-                                </button>
-                            )}
-                        </div>
-                    </div>
+
+            {/* Centered Header Section */}
+            <div className="header-section w-full bg-white dark:bg-gray-800 shadow-md border-b-2 border-gray-200 dark:border-gray-700" style={{ padding: 'var(--responsive-spacing-4)' }}>
+                <div className="flex flex-col items-center justify-center w-full max-w-none">
+                    {/* Title - Always Centered */}
+                    <h1 
+                        className="title font-bold text-center text-gray-900 dark:text-gray-100 mb-4"
+                        style={{ fontSize: 'var(--responsive-text-2xl)' }}
+                    >
+                        Central Database
+                    </h1>
                     
-                    {/* Compact Global Search */}
-                    <div className="flex justify-center">
-                        <GlobalFilter
-                            preGlobalFilteredRows={preGlobalFilteredRows}
-                            globalFilter={state.globalFilter}
-                            setGlobalFilter={setGlobalFilter}
-                            darkMode={darkMode}
-                        />
+                    {/* Action Buttons - Centered and Responsive */}
+                    <div className="w-full max-w-6xl">
+                        <div className="flex flex-wrap justify-center items-center gap-2 mb-4">
+                            <button
+                                onClick={handleFetchAllUserInfo}
+                                className={`responsive-btn rounded transition-colors ${darkMode ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-green-500 text-white hover:bg-green-600'}`}
+                            >
+                                <FontAwesomeIcon icon={faSync} className="mr-1" />
+                                {loadingAllUsers ? 'Fetching...' : 'Fetch Data'}
+                            </button>
+                            <button
+                                onClick={handleExportToExcel}
+                                className={`responsive-btn rounded transition-colors ${darkMode ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                            >
+                                <FontAwesomeIcon icon={faFileExcel} className="mr-1" />
+                                Export
+                            </button>
+                            <button
+                                onClick={handleButtonClick}
+                                className={`responsive-btn rounded transition-colors ${darkMode ? 'bg-yellow-600 text-white hover:bg-yellow-700' : 'bg-yellow-500 text-white hover:bg-yellow-600'}`}
+                            >
+                                <FontAwesomeIcon icon={faUpload} className="mr-1"/>
+                                Upload
+                            </button>
+                            <input
+                                id="fileInput"
+                                type="file"
+                                accept=".xlsx, .xls"
+                                onChange={handleFileChange}
+                                style={{ display: 'none' }}
+                            />
+                            <select
+                                value={view}
+                                onChange={(e) => setView(e.target.value)}
+                                className={`responsive-btn rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-900'}`}
+                            >
+                                <option value="default">View All</option>
+                                <option value="DSS">DSS_ZTE</option>
+                                <option value="HR">HR</option>
+                                <option value="Mobility">Mobility</option>
+                            </select>
+                            <div className="flex items-center gap-1">
+                                <select
+                                    value={selectedTableName}
+                                    onChange={handleSelectChange}
+                                    className={`responsive-btn rounded border ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-900'}`}
+                                >
+                                    <option value="">All Tables</option>
+                                    {tableNames.map((table) => (
+                                        <option key={table.table_name} value={table.table_name}>
+                                            {table.table_name}
+                                        </option>
+                                    ))}
+                                </select>
+                                {selectedTableName && (
+                                    <button
+                                        onClick={() => handleDeleteTable(selectedTableName)}
+                                        className={`responsive-btn rounded transition-colors ${darkMode ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
+                                        title="Delete Table"
+                                    >
+                                        <FontAwesomeIcon icon={faTrashAlt} />
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                        
+                        {/* Global Search - Centered */}
+                        <div className="flex justify-center">
+                            <GlobalFilter
+                                preGlobalFilteredRows={preGlobalFilteredRows}
+                                globalFilter={state.globalFilter}
+                                setGlobalFilter={setGlobalFilter}
+                                darkMode={darkMode}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* Excel-like Table Container with visible scrollbars */}
-            <div className="main-content-area h-screen pt-4" style={{ height: 'calc(100vh - 200px)' }}>
-                <div className="mx-4 h-full">
-                    <div className="h-full border-2 border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 shadow-lg">
-                        {/* Table wrapper with forced scrollbars */}
-                        <div className="table-container h-full w-full" style={{ 
-                            overflow: 'auto',
-                            scrollbarWidth: 'auto',
-                            msOverflowStyle: 'auto'
-                        }}>
-                            <table {...getTableProps()} className="border-collapse" style={{ 
-                                tableLayout: 'auto', 
-                                fontSize: '13px',
-                                minWidth: '1500px',
-                                width: 'max-content'
-                            }}>
-                                <thead className="sticky top-0 z-20 bg-gray-50 dark:bg-gray-700">
-                                    {headerGroups.map(headerGroup => (
-                                        <React.Fragment key={headerGroup.id}>
-                                            {/* Header Row - Excel style */}
-                                            <tr {...headerGroup.getHeaderGroupProps()}>
-                                                {headerGroup.headers.map(column => (
-                                                    <th
-                                                        {...column.getHeaderProps()}
-                                                        className="px-2 py-1 border-r border-b border-gray-300 dark:border-gray-600 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600 whitespace-nowrap"
+            {/* Full Width Responsive Table Container */}
+            <div 
+                className="table-container w-full"
+                style={{ 
+                    height: 'calc(100vh - 200px)',
+                    minHeight: '300px',
+                    padding: 'var(--responsive-spacing-2)'
+                }}
+            >
+                <div className="w-full h-full border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 shadow-lg overflow-hidden">
+                    <div className="excel-scrollbar w-full h-full overflow-auto">
+                        <table 
+                            {...getTableProps()} 
+                            className="w-full border-collapse"
+                            style={{ 
+                                tableLayout: 'auto',
+                                minWidth: '100%'
+                            }}
+                        >
+                            <thead className="sticky top-0 z-20 bg-gray-100 dark:bg-gray-700">
+                                {headerGroups.map(headerGroup => (
+                                    <React.Fragment key={headerGroup.id}>
+                                        {/* Header Row */}
+                                        <tr {...headerGroup.getHeaderGroupProps()}>
+                                            {headerGroup.headers.map(column => (
+                                                <th
+                                                    {...column.getHeaderProps()}
+                                                    className="border-r border-b border-gray-300 dark:border-gray-600 text-left font-semibold text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600"
+                                                    style={{
+                                                        fontSize: 'var(--responsive-text-xs)',
+                                                        padding: 'var(--responsive-spacing-1) var(--responsive-spacing-2)',
+                                                        minWidth: 'fit-content'
+                                                    }}
+                                                >
+                                                    <div 
+                                                        {...column.getSortByToggleProps()}
+                                                        className="flex items-center justify-between cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-500 px-1 py-1 rounded"
                                                     >
-                                                        <div 
-                                                            {...column.getSortByToggleProps()}
-                                                            className="flex items-center justify-between cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-500 px-1 py-1 rounded"
-                                                        >
-                                                            <span className="text-xs font-medium">{column.render('Header')}</span>
-                                                            <span className="ml-1">
-                                                                {column.isSorted
-                                                                    ? column.isSortedDesc
-                                                                        ? <FontAwesomeIcon icon={faSortDown} className="text-blue-500 text-xs" />
-                                                                        : <FontAwesomeIcon icon={faSortUp} className="text-blue-500 text-xs" />
-                                                                    : <FontAwesomeIcon icon={faSort} className="text-gray-400 text-xs" />}
-                                                            </span>
-                                                        </div>
-                                                    </th>
-                                                ))}
-                                                <th className="px-2 py-1 border-r border-b border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-600 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 sticky right-0 z-30 whitespace-nowrap">
-                                                    Actions
+                                                        <span className="font-medium">{column.render('Header')}</span>
+                                                        <span className="ml-1">
+                                                            {column.isSorted
+                                                                ? column.isSortedDesc
+                                                                    ? <FontAwesomeIcon icon={faSortDown} className="text-blue-500" />
+                                                                    : <FontAwesomeIcon icon={faSortUp} className="text-blue-500" />
+                                                                : <FontAwesomeIcon icon={faSort} className="text-gray-400" />}
+                                                        </span>
+                                                    </div>
                                                 </th>
-                                            </tr>
-                                            {/* Filter Row - Excel style */}
-                                            <tr className="bg-gray-50 dark:bg-gray-700">
-                                                {headerGroup.headers.map(column => (
-                                                    <th key={column.id} className="px-1 py-1 border-r border-b border-gray-300 dark:border-gray-600">
-                                                        {column.canFilter ? column.render('Filter') : null}
-                                                    </th>
-                                                ))}
-                                                <th className="px-1 py-1 border-r border-b border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 sticky right-0 z-30">
-                                                    {/* Actions column - no filter */}
-                                                </th>
-                                            </tr>
-                                        </React.Fragment>
-                                    ))}
-                                </thead>
-                                <tbody {...getTableBodyProps()}>
-                                    {rows.map((row, index) => {
-                                        prepareRow(row);
-                                        return (
-                                            <tr
-                                                {...row.getRowProps()}
-                                                className={`${index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-750'} hover:bg-blue-50 dark:hover:bg-gray-700 ${editAssetId === row.original.id ? 'bg-blue-100 dark:bg-blue-900' : ''}`}
+                                            ))}
+                                            <th className="border-r border-b border-gray-300 dark:border-gray-600 bg-gray-200 dark:bg-gray-600 text-left font-semibold text-gray-700 dark:text-gray-300 sticky right-0 z-30"
+                                                style={{
+                                                    fontSize: 'var(--responsive-text-xs)',
+                                                    padding: 'var(--responsive-spacing-1) var(--responsive-spacing-2)',
+                                                    minWidth: '100px'
+                                                }}
                                             >
-                                                {row.cells.map(cell => (
-                                                    <td
-                                                        {...cell.getCellProps()}
-                                                        className="px-2 py-1 border-r border-b border-gray-200 dark:border-gray-600 text-xs text-gray-900 dark:text-gray-100 whitespace-nowrap"
-                                                    >
-                                                        {editAssetId === row.original.id ? (
-                                                            <input
-                                                                type="text"
-                                                                name={cell.column.id}
-                                                                value={editValues[cell.column.id] || ''}
-                                                                onChange={handleChange}
-                                                                className={`w-full px-1 py-0.5 text-xs border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'border-gray-300 bg-white text-gray-900'}`}
-                                                                style={{ minWidth: '50px' }}
-                                                            />
-                                                        ) : (
-                                                            <div className="overflow-hidden text-ellipsis" title={cell.value}>
-                                                                {cell.render('Cell')}
-                                                            </div>
-                                                        )}
-                                                    </td>
-                                                ))}
-                                                <td className="px-2 py-1 border-r border-b border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 sticky right-0 z-10 whitespace-nowrap">
+                                                Actions
+                                            </th>
+                                        </tr>
+                                        {/* Filter Row */}
+                                        <tr className="bg-gray-50 dark:bg-gray-700">
+                                            {headerGroup.headers.map(column => (
+                                                <th key={column.id} className="border-r border-b border-gray-300 dark:border-gray-600" style={{ padding: 'var(--responsive-spacing-1)' }}>
+                                                    {column.canFilter ? column.render('Filter') : null}
+                                                </th>
+                                            ))}
+                                            <th className="border-r border-b border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 sticky right-0 z-30" style={{ padding: 'var(--responsive-spacing-1)' }}>
+                                                {/* Actions column - no filter */}
+                                            </th>
+                                        </tr>
+                                    </React.Fragment>
+                                ))}
+                            </thead>
+                            <tbody {...getTableBodyProps()}>
+                                {rows.map((row, index) => {
+                                    prepareRow(row);
+                                    return (
+                                        <tr
+                                            {...row.getRowProps()}
+                                            className={`${index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-750'} hover:bg-blue-50 dark:hover:bg-gray-700 ${editAssetId === row.original.id ? 'bg-blue-100 dark:bg-blue-900' : ''}`}
+                                        >
+                                            {row.cells.map(cell => (
+                                                <td
+                                                    {...cell.getCellProps()}
+                                                    className="responsive-cell border-r border-b border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100"
+                                                >
                                                     {editAssetId === row.original.id ? (
-                                                        <div className="flex space-x-1">
-                                                            <button
-                                                                onClick={handleSaveClick}
-                                                                className={`px-1.5 py-0.5 rounded text-xs ${darkMode ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-green-500 text-white hover:bg-green-600'} transition-colors`}
-                                                            >
-                                                                <FontAwesomeIcon icon={faSave} />
-                                                            </button>
-                                                            <button
-                                                                onClick={handleCancelEdit}
-                                                                className={`px-1.5 py-0.5 rounded text-xs ${darkMode ? 'bg-gray-600 text-white hover:bg-gray-700' : 'bg-gray-500 text-white hover:bg-gray-600'} transition-colors`}
-                                                            >
-                                                                <FontAwesomeIcon icon={faTimes} />
-                                                            </button>
-                                                        </div>
+                                                        <input
+                                                            type="text"
+                                                            name={cell.column.id}
+                                                            value={editValues[cell.column.id] || ''}
+                                                            onChange={handleChange}
+                                                            className={`w-full px-1 py-0.5 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'border-gray-300 bg-white text-gray-900'}`}
+                                                            style={{ 
+                                                                fontSize: 'var(--responsive-text-xs)',
+                                                                minWidth: '60px'
+                                                            }}
+                                                        />
                                                     ) : (
-                                                        <div className="flex space-x-1">
-                                                            <button
-                                                                onClick={() => handleEditClick(row.original)}
-                                                                className={`px-1.5 py-0.5 rounded text-xs ${darkMode ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'} transition-colors`}
-                                                            >
-                                                                <FontAwesomeIcon icon={faEdit} />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleDelete(row.original.id)}
-                                                                className={`px-1.5 py-0.5 rounded text-xs ${darkMode ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'} transition-colors`}
-                                                            >
-                                                                <FontAwesomeIcon icon={faTrashAlt} />
-                                                            </button>
+                                                        <div className="overflow-hidden text-ellipsis" title={cell.value}>
+                                                            {cell.render('Cell')}
                                                         </div>
                                                     )}
                                                 </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
+                                            ))}
+                                            <td className="responsive-cell border-r border-b border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 sticky right-0 z-10">
+                                                {editAssetId === row.original.id ? (
+                                                    <div className="flex space-x-1">
+                                                        <button
+                                                            onClick={handleSaveClick}
+                                                            className={`px-1.5 py-0.5 rounded transition-colors ${darkMode ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-green-500 text-white hover:bg-green-600'}`}
+                                                            style={{ fontSize: 'var(--responsive-text-xs)' }}
+                                                        >
+                                                            <FontAwesomeIcon icon={faSave} />
+                                                        </button>
+                                                        <button
+                                                            onClick={handleCancelEdit}
+                                                            className={`px-1.5 py-0.5 rounded transition-colors ${darkMode ? 'bg-gray-600 text-white hover:bg-gray-700' : 'bg-gray-500 text-white hover:bg-gray-600'}`}
+                                                            style={{ fontSize: 'var(--responsive-text-xs)' }}
+                                                        >
+                                                            <FontAwesomeIcon icon={faTimes} />
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex space-x-1">
+                                                        <button
+                                                            onClick={() => handleEditClick(row.original)}
+                                                            className={`px-1.5 py-0.5 rounded transition-colors ${darkMode ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                                                            style={{ fontSize: 'var(--responsive-text-xs)' }}
+                                                        >
+                                                            <FontAwesomeIcon icon={faEdit} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDelete(row.original.id)}
+                                                            className={`px-1.5 py-0.5 rounded transition-colors ${darkMode ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
+                                                            style={{ fontSize: 'var(--responsive-text-xs)' }}
+                                                        >
+                                                            <FontAwesomeIcon icon={faTrashAlt} />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
                     </div>
-                    
-                    {/* Results Summary - Excel style */}
-                    <div className="main-content-area mt-2 text-xs text-gray-600 dark:text-gray-400 text-center bg-gray-100 dark:bg-gray-700 py-1 rounded">
-                        Showing {rows.length} of {preGlobalFilteredRows.length} results
-                    </div>
+                </div>
+                
+                {/* Results Summary */}
+                <div 
+                    className="mt-2 text-center bg-gray-100 dark:bg-gray-700 py-1 rounded text-gray-600 dark:text-gray-400"
+                    style={{ fontSize: 'var(--responsive-text-xs)' }}
+                >
+                    Showing {rows.length} of {preGlobalFilteredRows.length} results
                 </div>
             </div>
 
