@@ -490,9 +490,8 @@ const CentralDatabase = ({ darkMode }) => {
             </div>
             </div>
 
-            <div className="w-full overflow-auto shadow-lg rounded-lg">
-                <div className="inline-block min-w-full align-middle">
-                    <table {...getTableProps()} className="min-w-full border-collapse overflow-scroll">
+            <div className="container w-full">
+                <table {...getTableProps()} className="table-auto overflow-scroll w-full bg-white dark:bg-gray-800">
                     <thead>
                         {headerGroups.map(headerGroup => (
                             <React.Fragment key={headerGroup.id}>
@@ -586,8 +585,7 @@ const CentralDatabase = ({ darkMode }) => {
                             );
                         })}
                     </tbody>
-                                    </table>
-                </div>
+                </table>
             </div>
 
             {showDeleteConfirm && (
