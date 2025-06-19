@@ -6,9 +6,10 @@ import { useTableContext } from './TableContext';
 import * as XLSX from 'xlsx';
 import axios from 'axios';
 
-// Default column filter component
+// Default filter UI component for individual columns
 function DefaultColumnFilter({
     column: { filterValue, preFilteredRows, setFilter },
+    darkMode
 }) {
     const count = preFilteredRows.length
 
@@ -19,38 +20,12 @@ function DefaultColumnFilter({
                 setFilter(e.target.value || undefined)
             }}
             placeholder={`Search ${count} records...`}
-            className="w-full px-2 py-1 text-xs border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
+            className={`w-full px-2 py-1 text-xs border rounded ${
+                darkMode 
+                    ? 'bg-gray-700 border-gray-600 text-gray-300 placeholder-gray-400' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+            } focus:outline-none focus:ring-1 focus:ring-blue-500`}
         />
-    )
-}
-
-// Select column filter for specific columns
-function SelectColumnFilter({
-    column: { filterValue, setFilter, preFilteredRows, id },
-}) {
-    const options = React.useMemo(() => {
-        const options = new Set()
-        preFilteredRows.forEach(row => {
-            options.add(row.values[id])
-        })
-        return [...options.values()]
-    }, [id, preFilteredRows])
-
-    return (
-        <select
-            value={filterValue}
-            onChange={e => {
-                setFilter(e.target.value || undefined)
-            }}
-            className="w-full px-2 py-1 text-xs border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
-        >
-            <option value="">All</option>
-            {options.map((option, i) => (
-                <option key={i} value={option}>
-                    {option}
-                </option>
-            ))}
-        </select>
     )
 }
 
@@ -80,7 +55,7 @@ const CentralDatabase = ({ darkMode }) => {
     useEffect(() => {
         const fetchTableNames = async () => {
             try {
-                const response = await fetch('http://se160590.fg.rbc.com:5000/api/table-names');
+                const response = await fetch('http://sei60590.fg.rbc.com:5000/api/table-names');
                 if (!response.ok) {
                     throw new Error('Failed to fetch table names');
                 }
@@ -97,7 +72,7 @@ const CentralDatabase = ({ darkMode }) => {
     
     const fetchAssets = async () => {
         try {
-            const url = selectedTableName ? `http://se160590.fg.rbc.com:5000/api/asset-by-tableName?table_name=${selectedTableName}` : 'http://se160590.fg.rbc.com:5000/api/assets';
+            const url = selectedTableName ? `http://sei60590.fg.rbc.com:5000/api/asset-by-table?table_name=${selectedTableName}` : 'http://sei60590.fg.rbc.com:5000/api/assets';
             const response = await fetch(url);
             if (!response.ok) {
                 throw new Error('Failed to fetch assets');
@@ -127,7 +102,7 @@ const CentralDatabase = ({ darkMode }) => {
 
     const handleSaveClick = async () => {
         try {
-            const response = await fetch(`http://se160590.fg.rbc.com:5000/api/assets/${editAssetId}`, {
+            const response = await fetch(`http://sei60590.fg.rbc.com:5000/api/assets/${editAssetId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -146,11 +121,9 @@ const CentralDatabase = ({ darkMode }) => {
         }
     };
 
-
-
     const handleFetchUserInfo = async (employeeId) => {
         try {
-            const response = await fetch(`http://se160590.fg.rbc.com:5000/api/run-powershell`, {
+            const response = await fetch(`http://sei60590.fg.rbc.com:5000/api/run-powershell`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -201,14 +174,7 @@ const CentralDatabase = ({ darkMode }) => {
 
         await Promise.all(userInfoPromises);
         setLoadingAllUsers(false);
-  
-    useEffect(() => {
-        handleFetchAllUserInfo();
-
-        const interval = setInterval(() => {handleFetchAllUserInfo()}, 2 * 60 * 1000);
-        return () => clearInterval(interval);
-    }, [])
-  };
+    };
 
     const updateAssetDetails = async (employeeId, userInfoOutput) => {
         const loginIdMatch = userInfoOutput.match(/SamAccountName\s*:\s*(\S+)/);
@@ -236,7 +202,7 @@ const CentralDatabase = ({ darkMode }) => {
                     home_drive: driveID
                 };
 
-                const response = await fetch(`http://se160590.fg.rbc.com:5000/api/assets/${assetToUpdate.id}`, {
+                const response = await fetch(`http://sei60590.fg.rbc.com:5000/api/assets/${assetToUpdate.id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -281,7 +247,7 @@ const CentralDatabase = ({ darkMode }) => {
 
     const handleDelete = async (assetId) => {
         try {
-            const response = await fetch(`http://se160590.fg.rbc.com:5000/api/assets/${assetId}`, {
+            const response = await fetch(`http://sei60590.fg.rbc.com:5000/api/assets/${assetId}`, {
                 method: 'DELETE',
             });
             if (!response.ok) {
@@ -300,13 +266,12 @@ const CentralDatabase = ({ darkMode }) => {
         XLSX.writeFile(wb, 'assets.xlsx');
     };
 
-
     const handleFileUpload = async (file) => {
         const formData = new FormData();
         formData.append('file', file);
 
         try {
-            const response = await axios.post('http://se160590.fg.rbc.com:5000/api/upload', formData, {
+            const response = await axios.post('http://sei60590.fg.rbc.com:5000/api/upload', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -336,7 +301,7 @@ const CentralDatabase = ({ darkMode }) => {
 
     const confirmDeleteTable = async () => {
         try {
-            const response = await fetch(`http://se160590.fg.rbc.com:5000/api/tables/${tableToDelete}`, {
+            const response = await fetch(`http://sei60590.fg.rbc.com:5000/api/tables/${tableToDelete}`, {
                 method: 'DELETE',
             });
             
@@ -353,7 +318,7 @@ const CentralDatabase = ({ darkMode }) => {
             setTableToDelete('');
             
             // Refresh table names and assets
-            const tableNamesResponse = await fetch('http://se160590.fg.rbc.com:5000/api/table-names');
+            const tableNamesResponse = await fetch('http://sei60590.fg.rbc.com:5000/api/table-names');
             const tableNamesData = await tableNamesResponse.json();
             setTableNames(tableNamesData);
             
@@ -369,18 +334,14 @@ const CentralDatabase = ({ darkMode }) => {
         setTableToDelete('');
     };
 
+    // Enhanced columns configuration with individual filters
     const columns = React.useMemo(() => {
-        const getColumnFilter = (accessor) => {
-            if (['business_group', 'technician', 'phone_platform', 'location'].includes(accessor)) {
-                return SelectColumnFilter;
-            }
-            return DefaultColumnFilter;
-        };
-
+        const baseColumns = [];
+        
         if (view === 'default') {
-            return [
+            baseColumns.push(
                 { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter },
-                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter },
+                { Header: 'Business Group', accessor: 'business_group', Filter: DefaultColumnFilter },
                 { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter },
                 { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter },
                 { Header: 'Preferred Name', accessor: 'preferred_name', Filter: DefaultColumnFilter },
@@ -391,62 +352,104 @@ const CentralDatabase = ({ darkMode }) => {
                 { Header: 'School', accessor: 'school', Filter: DefaultColumnFilter },
                 { Header: 'Business Manager', accessor: 'business_manager', Filter: DefaultColumnFilter },
                 { Header: 'Transit', accessor: 'transit', Filter: DefaultColumnFilter },
-                { Header: 'Location', accessor: 'location', Filter: SelectColumnFilter },
+                { Header: 'Location', accessor: 'location', Filter: DefaultColumnFilter },
                 { Header: 'Phone Number', accessor: 'phone_number', Filter: DefaultColumnFilter },
                 { Header: 'Phone Serial', accessor: 'phone_serial', Filter: DefaultColumnFilter },
-                { Header: 'IMEI', accessor: 'phone_imei', Filter: DefaultColumnFilter },
-                { Header: 'Phone Platform', accessor: 'phone_platform', Filter: SelectColumnFilter },
+                { Header: 'IMEI', accessor: 'phone_ime1', Filter: DefaultColumnFilter },
+                { Header: 'Phone Platform', accessor: 'phone_platform', Filter: DefaultColumnFilter },
                 { Header: 'Onboarding Date', accessor: 'onboarding_date', Filter: DefaultColumnFilter },
-                { Header: 'Assigned Tech', accessor: 'technician', Filter: SelectColumnFilter }
-            ];
+                { Header: 'Assigned Tech', accessor: 'technician', Filter: DefaultColumnFilter }
+            );
         } else if (view === 'DSS') {
-            return [
+            baseColumns.push(
                 { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter },
-                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter },
+                { Header: 'Business Group', accessor: 'business_group', Filter: DefaultColumnFilter },
                 { Header: 'Asset Number', accessor: 'asset_number', Filter: DefaultColumnFilter },
                 { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter },
                 { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter },
                 { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter },
                 { Header: 'RBC Email', accessor: 'rbc_email', Filter: DefaultColumnFilter },
                 { Header: 'Onboarding Date', accessor: 'onboarding_date', Filter: DefaultColumnFilter },
-                { Header: 'Assigned Tech', accessor: 'technician', Filter: SelectColumnFilter },
-            ];
+                { Header: 'Assigned Tech', accessor: 'technician', Filter: DefaultColumnFilter }
+            );
         } else if (view === 'HR') {
-            return [
-                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter },
+            baseColumns.push(
+                { Header: 'Business Group', accessor: 'business_group', Filter: DefaultColumnFilter },
                 { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter },
                 { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter },
                 { Header: 'School', accessor: 'school', Filter: DefaultColumnFilter },
                 { Header: 'Business Manager', accessor: 'business_manager', Filter: DefaultColumnFilter },
                 { Header: 'Transit', accessor: 'transit', Filter: DefaultColumnFilter },
-                { Header: 'Location', accessor: 'location', Filter: SelectColumnFilter },
+                { Header: 'Location', accessor: 'location', Filter: DefaultColumnFilter },
                 { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter },
-                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter },
-            ];
-        } 
-        else if (view === 'Mobility') {
-            return [
+                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter }
+            );
+        } else if (view === 'Mobility') {
+            baseColumns.push(
                 { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter },
                 { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter },
                 { Header: 'Phone Number', accessor: 'phone_number', Filter: DefaultColumnFilter },
                 { Header: 'Phone Serial', accessor: 'phone_serial', Filter: DefaultColumnFilter },
-                { Header: 'IMEI', accessor: 'phone_imei', Filter: DefaultColumnFilter },
-                { Header: 'Phone Platform', accessor: 'phone_platform', Filter: SelectColumnFilter },
+                { Header: 'IMEI', accessor: 'phone_ime1', Filter: DefaultColumnFilter },
+                { Header: 'Phone Platform', accessor: 'phone_platform', Filter: DefaultColumnFilter },
                 { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter },
-                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter },
-                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter },
-            ];
+                { Header: 'Business Group', accessor: 'business_group', Filter: DefaultColumnFilter },
+                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter }
+            );
         }
-        return [];
-    }, [view, filterInput, darkMode]);
 
-    // Default column configuration
+        // Add Actions column
+        baseColumns.push({
+            Header: 'Actions',
+            accessor: 'actions',
+            disableSortBy: true,
+            disableFilters: true,
+            Cell: ({ row }) => (
+                <div className="flex space-x-2">
+                    {editAssetId === row.original.id ? (
+                        <>
+                            <button
+                                onClick={handleSaveClick}
+                                className={`px-3 py-1 rounded-md ${darkMode ? 'bg-green-600 text-gray-100 hover:bg-green-700' : 'bg-green-500 text-white hover:bg-green-600'}`}
+                            >
+                                <FontAwesomeIcon icon={faSave} />
+                            </button>
+                            <button
+                                onClick={handleCancelEdit}
+                                className={`px-3 py-1 rounded-md ${darkMode ? 'bg-gray-600 text-gray-100 hover:bg-gray-700' : 'bg-gray-500 text-white hover:bg-gray-600'}`}
+                            >
+                                <FontAwesomeIcon icon={faTimes} />
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <button
+                                onClick={() => handleEditClick(row.original)}
+                                className={`px-3 py-1 rounded-md ${darkMode ? 'bg-blue-600 text-gray-100 hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                            >
+                                <FontAwesomeIcon icon={faEdit} />
+                            </button>
+                            <button
+                                onClick={() => handleDelete(row.original.id)}
+                                className={`px-3 py-1 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
+                            >
+                                <FontAwesomeIcon icon={faTrashAlt} />
+                            </button>
+                        </>
+                    )}
+                </div>
+            )
+        });
+
+        return baseColumns;
+    }, [view, darkMode, editAssetId, editValues]);
+
     const defaultColumn = React.useMemo(
         () => ({
             Filter: DefaultColumnFilter,
         }),
         []
-    )
+    );
 
     const {
         getTableProps,
@@ -466,14 +469,14 @@ const CentralDatabase = ({ darkMode }) => {
 
     return (
         <div className={`mx-auto p-4 ${darkMode ? 'dark' : ''}`}>
-            <h1 className="mr-20 text-3xl font-bold mb-4 text-center text-gray-900 darkitext-gray-100">Central Database</h1>
+            <h1 className="mt-20 text-3xl font-bold mb-4 text-center text-gray-900 dark:text-gray-100">Central Database</h1>
             
             <div className="bg-white shadow-lg rounded-lg dark:bg-gray-800 mb-8 p-4 w-full">
-                <h2 className="text-xl font-semibold mb-4 text-gray-700 darkitext-gray-300 text-center">Actions</h2>
-                <div className="flex justify-center">
+                <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300 text-center">Actions</h2>
+                <div className="flex flex-wrap justify-center gap-4">
                     <button
                         onClick={handleFetchAllUserInfo}
-                        className={`mr-5 px-4 py-2 rounded-md ${darkMode ? 'bg-green-500 text-gray-100 hover:bg-blue-700' : 'bg-green-500 text-white hover:bg-blue-600'}`}
+                        className={`px-4 py-2 rounded-md ${darkMode ? 'bg-green-500 text-gray-100 hover:bg-blue-700' : 'bg-green-500 text-white hover:bg-blue-600'}`}
                     >
                         <FontAwesomeIcon icon={faSync} className="mr-2" />
                         {loadingAllUsers ? 'Fetching...' : 'Fetch User Data'}
@@ -482,13 +485,15 @@ const CentralDatabase = ({ darkMode }) => {
                         onClick={handleExportToExcel}
                         className={`px-4 py-2 rounded-md ${darkMode ? 'bg-green-600 text-gray-100 hover:bg-green-700' : 'bg-green-500 text-white hover:bg-green-600'}`}
                     >
-                        <FontAwesomeIcon icon={faFileExcel} /> Export to Excel
+                        <FontAwesomeIcon icon={faFileExcel} className="mr-2" />
+                        Export to Excel
                     </button>
                     <button
                         onClick={handleButtonClick}
-                        className={`ml-4 px-4 py-2 rounded-md ${darkMode ? 'bg-yellow-600 text-gray-100 hover:bg-yellow-500' : 'bg-yellow-500 text-white hover:bg-yellow-600'}`}
+                        className={`px-4 py-2 rounded-md ${darkMode ? 'bg-yellow-600 text-gray-100 hover:bg-yellow-500' : 'bg-yellow-500 text-white hover:bg-yellow-600'}`}
                     >
                         <FontAwesomeIcon icon={faUpload} className="mr-2"/>
+                        Upload File
                     </button>
                     <input
                         id="fileInput"
@@ -497,114 +502,134 @@ const CentralDatabase = ({ darkMode }) => {
                         onChange={handleFileChange}
                         style={{ display: 'none' }}
                     />
-                <div className="ml-10 text-center">
+                    
                     <select
                         value={view}
                         onChange={(e) => setView(e.target.value)}
-                        className={`px-4 py-2 rounded-md ${darkMode ? 'bg-gray-800 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-900'}`}
+                        className={`px-4 py-2 rounded-md ${darkMode ? 'bg-gray-800 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-900'} border`}
                     >
                         <option value="default">View All</option>
                         <option value="DSS">DSS View</option>
                         <option value="HR">HR View</option>
                         <option value="Mobility">Mobility View</option>
                     </select>
-                </div>
-                <div className="ml-10 text-center flex items-center gap-2">
-                    <select
-                        value={selectedTableName}
-                        onChange={handleSelectChange}
-                        className={`px-4 py-2 rounded-md ${darkMode ? 'bg-gray-800 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-900'}`}
-                    >
-                        <option value="">Select Year</option>
-                        {tableNames.map((table) => (
-                            <option key={table.table_name} value={table.table_name}>
-                                {table.table_name}
-                            </option>
-                        ))}
-                    </select>
-                    {selectedTableName && (
-                        <button
-                            onClick={() => handleDeleteTable(selectedTableName)}
-                            className={`px-3 py-2 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
-                            title="Delete Table"
+                    
+                    <div className="flex items-center gap-2">
+                        <select
+                            value={selectedTableName}
+                            onChange={handleSelectChange}
+                            className={`px-4 py-2 rounded-md ${darkMode ? 'bg-gray-800 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-900'} border`}
                         >
-                            <FontAwesomeIcon icon={faTrashAlt} />
-                        </button>
-                    )}
+                            <option value="">Select Year</option>
+                            {tableNames.map((table) => (
+                                <option key={table.table_name} value={table.table_name}>
+                                    {table.table_name}
+                                </option>
+                            ))}
+                        </select>
+                        {selectedTableName && (
+                            <button
+                                onClick={() => handleDeleteTable(selectedTableName)}
+                                className={`px-3 py-2 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
+                                title="Delete Table"
+                            >
+                                <FontAwesomeIcon icon={faTrashAlt} />
+                            </button>
+                        )}
+                    </div>
                 </div>
-
-            </div>
             </div>
 
-            {/* ONLY UPDATED SECTION - Enhanced Table Container */}
-            <div className="bg-white shadow-lg rounded-lg dark:bg-gray-800 overflow-hidden">
-                <div className="overflow-x-auto" style={{ maxHeight: 'calc(100vh - 300px)' }}>
-                    <table {...getTableProps()} className="w-full border-collapse">
-                        <thead className="sticky top-0 z-10">
+            {/* Excel-like Table Container with enhanced responsiveness */}
+            <div className="w-full">
+                <div className="overflow-auto shadow-lg rounded-lg border border-gray-300 dark:border-gray-600 max-h-[70vh]">
+                    <table 
+                        {...getTableProps()} 
+                        className={`min-w-full border-collapse ${darkMode ? 'bg-gray-800' : 'bg-white'}`}
+                        style={{ minWidth: '1200px' }} // Ensure minimum width for horizontal scroll
+                    >
+                        <thead className={`sticky top-0 z-10 ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
                             {headerGroups.map(headerGroup => (
                                 <React.Fragment key={headerGroup.id}>
                                     {/* Header Row */}
-                                    <tr {...headerGroup.getHeaderGroupProps()} className="bg-gray-50 dark:bg-gray-700">
+                                    <tr {...headerGroup.getHeaderGroupProps()}>
                                         {headerGroup.headers.map(column => (
                                             <th
-                                                {...column.getHeaderProps()}
-                                                className="px-4 py-3 border-b border-r border-gray-200 dark:border-gray-600 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider whitespace-nowrap"
+                                                {...column.getHeaderProps(column.getSortByToggleProps())}
+                                                className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider border border-gray-300 dark:border-gray-600 ${
+                                                    darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-50 text-gray-700'
+                                                } hover:bg-opacity-80 cursor-pointer select-none`}
+                                                style={{ minWidth: '120px', maxWidth: '200px' }}
                                             >
-                                                <div 
-                                                    {...column.getSortByToggleProps()}
-                                                    className="flex items-center justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 p-1 rounded"
-                                                >
-                                                    <span>{column.render('Header')}</span>
-                                                    <span className="ml-2">
-                                                        {column.isSorted
-                                                            ? column.isSortedDesc
-                                                                ? <FontAwesomeIcon icon={faSortDown} className="text-blue-500" />
-                                                                : <FontAwesomeIcon icon={faSortUp} className="text-blue-500" />
-                                                            : <FontAwesomeIcon icon={faSort} className="text-gray-400" />}
+                                                <div className="flex items-center justify-between">
+                                                    <span className="truncate">{column.render('Header')}</span>
+                                                    <span className="ml-1">
+                                                        {column.canSort && (
+                                                            column.isSorted
+                                                                ? column.isSortedDesc
+                                                                    ? <FontAwesomeIcon icon={faSortDown} className="text-blue-500" />
+                                                                    : <FontAwesomeIcon icon={faSortUp} className="text-blue-500" />
+                                                                : <FontAwesomeIcon icon={faSort} className="text-gray-400" />
+                                                        )}
                                                     </span>
                                                 </div>
                                             </th>
                                         ))}
-                                        <th className="px-4 py-3 border-b border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider sticky right-0 z-20">
-                                            Actions
-                                        </th>
                                     </tr>
                                     {/* Filter Row */}
-                                    <tr className="bg-gray-100 dark:bg-gray-600">
+                                    <tr>
                                         {headerGroup.headers.map(column => (
-                                            <th key={column.id} className="px-4 py-2 border-b border-r border-gray-200 dark:border-gray-600">
-                                                <div>
-                                                    {column.canFilter ? column.render('Filter') : null}
-                                                </div>
+                                            <th
+                                                key={`${column.id}-filter`}
+                                                className={`px-2 py-2 border border-gray-300 dark:border-gray-600 ${
+                                                    darkMode ? 'bg-gray-600' : 'bg-gray-100'
+                                                }`}
+                                            >
+                                                {column.canFilter ? column.render('Filter', { darkMode }) : null}
                                             </th>
                                         ))}
-                                        <th className="px-4 py-2 border-b border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-600 sticky right-0 z-20">
-                                            {/* Actions column - no filter */}
-                                        </th>
                                     </tr>
                                 </React.Fragment>
                             ))}
                         </thead>
-                        <tbody {...getTableBodyProps()} className="bg-white dark:bg-gray-800">
-                            {rows.map(row => {
+                        <tbody {...getTableBodyProps()} className={`divide-y ${darkMode ? 'divide-gray-600' : 'divide-gray-200'}`}>
+                            {rows.map((row, index) => {
                                 prepareRow(row);
                                 return (
                                     <tr
                                         {...row.getRowProps()}
-                                        className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${editAssetId === row.original.id ? 'bg-blue-50 dark:bg-gray-600' : ''}`}
+                                        className={`
+                                            ${index % 2 === 0 
+                                                ? (darkMode ? 'bg-gray-800' : 'bg-white') 
+                                                : (darkMode ? 'bg-gray-750' : 'bg-gray-50')
+                                            }
+                                            ${editAssetId === row.original.id 
+                                                ? (darkMode ? 'bg-blue-900' : 'bg-blue-100') 
+                                                : 'hover:bg-opacity-75'
+                                            }
+                                            ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}
+                                            transition-colors duration-150
+                                        `}
                                     >
                                         {row.cells.map(cell => (
                                             <td
                                                 {...cell.getCellProps()}
-                                                className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-r border-gray-200 dark:border-gray-700"
+                                                className={`px-4 py-3 text-sm border border-gray-300 dark:border-gray-600 ${
+                                                    darkMode ? 'text-gray-100' : 'text-gray-900'
+                                                }`}
+                                                style={{ minWidth: '120px', maxWidth: '200px' }}
                                             >
-                                                {editAssetId === row.original.id ? (
+                                                {editAssetId === row.original.id && cell.column.id !== 'actions' ? (
                                                     <input
                                                         type="text"
                                                         name={cell.column.id}
                                                         value={editValues[cell.column.id] || ''}
                                                         onChange={handleChange}
-                                                        className={`w-full px-2 py-1 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'border-gray-300 bg-white text-gray-900'}`}
+                                                        className={`w-full px-2 py-1 text-sm border rounded ${
+                                                            darkMode 
+                                                                ? 'bg-gray-700 border-gray-600 text-gray-300' 
+                                                                : 'bg-white border-gray-300 text-gray-900'
+                                                        } focus:outline-none focus:ring-1 focus:ring-blue-500`}
                                                     />
                                                 ) : (
                                                     <div className="truncate" title={cell.value}>
@@ -613,39 +638,6 @@ const CentralDatabase = ({ darkMode }) => {
                                                 )}
                                             </td>
                                         ))}
-                                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 sticky right-0 z-10">
-                                            {editAssetId === row.original.id ? (
-                                                <div className="flex space-x-2">
-                                                    <button
-                                                        onClick={handleSaveClick}
-                                                        className={`px-3 py-1 rounded-md text-xs ${darkMode ? 'bg-green-600 text-gray-100 hover:bg-green-700' : 'bg-green-500 text-white hover:bg-green-600'} transition-colors`}
-                                                    >
-                                                        <FontAwesomeIcon icon={faSave} />
-                                                    </button>
-                                                    <button
-                                                        onClick={handleCancelEdit}
-                                                        className={`px-3 py-1 rounded-md text-xs ${darkMode ? 'bg-gray-600 text-gray-100 hover:bg-gray-700' : 'bg-gray-500 text-white hover:bg-gray-600'} transition-colors`}
-                                                    >
-                                                        <FontAwesomeIcon icon={faTimes} />
-                                                    </button>
-                                                </div>
-                                            ) : (
-                                                <div className="flex space-x-2">
-                                                    <button
-                                                        onClick={() => handleEditClick(row.original)}
-                                                        className={`px-3 py-1 rounded-md text-xs ${darkMode ? 'bg-blue-600 text-gray-100 hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'} transition-colors`}
-                                                    >
-                                                        <FontAwesomeIcon icon={faEdit} />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDelete(row.original.id)}
-                                                        className={`px-3 py-1 rounded-md text-xs ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'} transition-colors`}
-                                                    >
-                                                        <FontAwesomeIcon icon={faTrashAlt} />
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </td>
                                     </tr>
                                 );
                             })}
@@ -654,6 +646,7 @@ const CentralDatabase = ({ darkMode }) => {
                 </div>
             </div>
 
+            {/* Delete Confirmation Modal */}
             {showDeleteConfirm && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm w-full mx-4">
