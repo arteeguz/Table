@@ -406,62 +406,62 @@ const CentralDatabase = ({ darkMode }) => {
 
         if (view === 'default') {
             return [
-                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter, minWidth: 150 },
-                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter, minWidth: 100 },
-                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'Preferred Name', accessor: 'preferred_name', Filter: DefaultColumnFilter, minWidth: 130 },
-                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'RBC Email', accessor: 'rbc_email', Filter: DefaultColumnFilter, minWidth: 200 },
-                { Header: 'Home Drive', accessor: 'home_drive', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Asset Number', accessor: 'asset_number', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'School', accessor: 'school', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Business Manager', accessor: 'business_manager', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Transit', accessor: 'transit', Filter: DefaultColumnFilter, minWidth: 100 },
-                { Header: 'Location', accessor: 'location', Filter: SelectColumnFilter, minWidth: 120 },
-                { Header: 'Phone Number', accessor: 'phone_number', Filter: DefaultColumnFilter, minWidth: 130 },
-                { Header: 'Phone Serial', accessor: 'phone_serial', Filter: DefaultColumnFilter, minWidth: 130 },
-                { Header: 'IMEI', accessor: 'phone_imei', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Phone Platform', accessor: 'phone_platform', Filter: SelectColumnFilter, minWidth: 130 },
-                { Header: 'Onboarding Date', accessor: 'onboarding_date', Filter: DefaultColumnFilter, minWidth: 140 },
-                { Header: 'Assigned Tech', accessor: 'technician', Filter: SelectColumnFilter, minWidth: 130 }
+                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter, width: 'auto' },
+                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'Preferred Name', accessor: 'preferred_name', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'RBC Email', accessor: 'rbc_email', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'Home Drive', accessor: 'home_drive', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'Asset Number', accessor: 'asset_number', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'School', accessor: 'school', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'Business Manager', accessor: 'business_manager', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'Transit', accessor: 'transit', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'Location', accessor: 'location', Filter: SelectColumnFilter, width: 'auto' },
+                { Header: 'Phone Number', accessor: 'phone_number', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'Phone Serial', accessor: 'phone_serial', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'IMEI', accessor: 'phone_imei', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'Phone Platform', accessor: 'phone_platform', Filter: SelectColumnFilter, width: 'auto' },
+                { Header: 'Onboarding Date', accessor: 'onboarding_date', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'Assigned Tech', accessor: 'technician', Filter: SelectColumnFilter, width: 'auto' }
             ];
         } else if (view === 'DSS') {
             return [
-                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter, minWidth: 150 },
-                { Header: 'Asset Number', accessor: 'asset_number', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter, minWidth: 100 },
-                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'RBC Email', accessor: 'rbc_email', Filter: DefaultColumnFilter, minWidth: 200 },
-                { Header: 'Onboarding Date', accessor: 'onboarding_date', Filter: DefaultColumnFilter, minWidth: 140 },
-                { Header: 'Assigned Tech', accessor: 'technician', Filter: SelectColumnFilter, minWidth: 130 },
+                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter, width: 'auto' },
+                { Header: 'Asset Number', accessor: 'asset_number', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'RBC Email', accessor: 'rbc_email', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'Onboarding Date', accessor: 'onboarding_date', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'Assigned Tech', accessor: 'technician', Filter: SelectColumnFilter, width: 'auto' },
             ];
         } else if (view === 'HR') {
             return [
-                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter, minWidth: 150 },
-                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'School', accessor: 'school', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Business Manager', accessor: 'business_manager', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Transit', accessor: 'transit', Filter: DefaultColumnFilter, minWidth: 100 },
-                { Header: 'Location', accessor: 'location', Filter: SelectColumnFilter, minWidth: 120 },
-                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter, minWidth: 100 },
+                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter, width: 'auto' },
+                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'School', accessor: 'school', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'Business Manager', accessor: 'business_manager', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'Transit', accessor: 'transit', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'Location', accessor: 'location', Filter: SelectColumnFilter, width: 'auto' },
+                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter, width: 'auto' },
             ];
         } 
         else if (view === 'Mobility') {
             return [
-                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'Phone Number', accessor: 'phone_number', Filter: DefaultColumnFilter, minWidth: 130 },
-                { Header: 'Phone Serial', accessor: 'phone_serial', Filter: DefaultColumnFilter, minWidth: 130 },
-                { Header: 'IMEI', accessor: 'phone_imei', Filter: DefaultColumnFilter, minWidth: 150 },
-                { Header: 'Phone Platform', accessor: 'phone_platform', Filter: SelectColumnFilter, minWidth: 130 },
-                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter, minWidth: 120 },
-                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter, minWidth: 150 },
-                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter, minWidth: 100 },
+                { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'Phone Number', accessor: 'phone_number', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'Phone Serial', accessor: 'phone_serial', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'IMEI', accessor: 'phone_imei', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'Phone Platform', accessor: 'phone_platform', Filter: SelectColumnFilter, width: 'auto' },
+                { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter, width: 'auto' },
+                { Header: 'Business Group', accessor: 'business_group', Filter: SelectColumnFilter, width: 'auto' },
+                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter, width: 'auto' },
             ];
         }
         return [];
@@ -583,7 +583,7 @@ const CentralDatabase = ({ darkMode }) => {
                 {/* Table Container */}
                 <div className="bg-white shadow-lg rounded-lg dark:bg-gray-800 overflow-hidden">
                     <div className="overflow-x-auto overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-lg" style={{ maxHeight: 'calc(100vh - 400px)', minHeight: '400px' }}>
-                        <table {...getTableProps()} className="w-full border-collapse" style={{ minWidth: 'max-content' }}>
+                        <table {...getTableProps()} className="w-full border-collapse" style={{ minWidth: 'max-content', tableLayout: 'auto' }}>
                             <thead className="sticky top-0 z-10">
                                 {headerGroups.map(headerGroup => (
                                     <React.Fragment key={headerGroup.id}>
@@ -593,7 +593,6 @@ const CentralDatabase = ({ darkMode }) => {
                                                 <th
                                                     {...column.getHeaderProps()}
                                                     className="px-4 py-3 border-b border-r border-gray-200 dark:border-gray-600 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider whitespace-nowrap"
-                                                    style={{ minWidth: column.minWidth }}
                                                 >
                                                     <div 
                                                         {...column.getSortByToggleProps()}
@@ -610,7 +609,7 @@ const CentralDatabase = ({ darkMode }) => {
                                                     </div>
                                                 </th>
                                             ))}
-                                            <th className="px-4 py-3 border-b border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider sticky right-0 z-20" style={{ minWidth: 100 }}>
+                                            <th className="px-4 py-3 border-b border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider sticky right-0 z-20">
                                                 Actions
                                             </th>
                                         </tr>
@@ -642,7 +641,6 @@ const CentralDatabase = ({ darkMode }) => {
                                                 <td
                                                     {...cell.getCellProps()}
                                                     className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-r border-gray-200 dark:border-gray-700"
-                                                    style={{ minWidth: cell.column.minWidth }}
                                                 >
                                                     {editAssetId === row.original.id ? (
                                                         <input
@@ -659,7 +657,7 @@ const CentralDatabase = ({ darkMode }) => {
                                                     )}
                                                 </td>
                                             ))}
-                                            <td className="px-4 py-3 whitespace-nowrap text-sm font-medium border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 sticky right-0 z-10" style={{ minWidth: 100 }}>
+                                            <td className="px-4 py-3 whitespace-nowrap text-sm font-medium border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 sticky right-0 z-10">
                                                 {editAssetId === row.original.id ? (
                                                     <div className="flex space-x-2">
                                                         <button
