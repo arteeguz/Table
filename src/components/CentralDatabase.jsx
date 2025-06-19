@@ -491,8 +491,43 @@ const CentralDatabase = ({ darkMode }) => {
 
     return (
         <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
-            {/* Fixed Header - Excel-like */}
-            <div className="w-full bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 p-4">
+            {/* Global styles for zoom centering */}
+            <style>
+                {`
+                /* Help with zoom centering behavior */
+                html, body {
+                    zoom-origin: center;
+                    transform-origin: center center;
+                }
+                /* Main content area should be the zoom focus */
+                .main-content-area {
+                    position: relative;
+                    z-index: 1;
+                    transform-origin: center center;
+                }
+                /* Force scrollbars to always be visible */
+                .table-container::-webkit-scrollbar {
+                    width: 14px;
+                    height: 14px;
+                }
+                .table-container::-webkit-scrollbar-track {
+                    background: #f1f1f1;
+                    border-radius: 6px;
+                }
+                .table-container::-webkit-scrollbar-thumb {
+                    background: #888;
+                    border-radius: 6px;
+                }
+                .table-container::-webkit-scrollbar-thumb:hover {
+                    background: #555;
+                }
+                .table-container::-webkit-scrollbar-corner {
+                    background: #f1f1f1;
+                }
+                `}
+            </style>
+            {/* Fixed Header - Excel-like with proper centering */}
+            <div className="main-content-area w-full bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 p-4 relative z-10">
                 <h1 className="text-2xl font-bold mb-4 text-center text-gray-900 dark:text-gray-100">Central Database</h1>
                 
                 {/* Compact Actions Panel */}
@@ -573,12 +608,22 @@ const CentralDatabase = ({ darkMode }) => {
                 </div>
             </div>
 
-            {/* Excel-like Table Container */}
-            <div className="h-screen pt-4" style={{ height: 'calc(100vh - 200px)' }}>
+            {/* Excel-like Table Container with visible scrollbars */}
+            <div className="main-content-area h-screen pt-4" style={{ height: 'calc(100vh - 200px)' }}>
                 <div className="mx-4 h-full">
-                    <div className="h-full border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 overflow-hidden">
-                        <div className="h-full overflow-auto">
-                            <table {...getTableProps()} className="w-full border-collapse" style={{ tableLayout: 'auto', fontSize: '13px' }}>
+                    <div className="h-full border-2 border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 shadow-lg">
+                        {/* Table wrapper with forced scrollbars */}
+                        <div className="table-container h-full w-full" style={{ 
+                            overflow: 'auto',
+                            scrollbarWidth: 'auto',
+                            msOverflowStyle: 'auto'
+                        }}>
+                            <table {...getTableProps()} className="border-collapse" style={{ 
+                                tableLayout: 'auto', 
+                                fontSize: '13px',
+                                minWidth: '1500px',
+                                width: 'max-content'
+                            }}>
                                 <thead className="sticky top-0 z-20 bg-gray-50 dark:bg-gray-700">
                                     {headerGroups.map(headerGroup => (
                                         <React.Fragment key={headerGroup.id}>
@@ -693,7 +738,7 @@ const CentralDatabase = ({ darkMode }) => {
                     </div>
                     
                     {/* Results Summary - Excel style */}
-                    <div className="mt-2 text-xs text-gray-600 dark:text-gray-400 text-center bg-gray-100 dark:bg-gray-700 py-1 rounded">
+                    <div className="main-content-area mt-2 text-xs text-gray-600 dark:text-gray-400 text-center bg-gray-100 dark:bg-gray-700 py-1 rounded">
                         Showing {rows.length} of {preGlobalFilteredRows.length} results
                     </div>
                 </div>
