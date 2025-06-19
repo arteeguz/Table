@@ -490,102 +490,115 @@ const CentralDatabase = ({ darkMode }) => {
             </div>
             </div>
 
-            <div className="container w-full">
-                <table {...getTableProps()} className="table-auto overflow-scroll w-full bg-white dark:bg-gray-800">
-                    <thead>
-                        {headerGroups.map(headerGroup => (
-                            <React.Fragment key={headerGroup.id}>
-                                <tr {...headerGroup.getHeaderGroupProps()}>
-                                    {headerGroup.headers.map(column => (
-                                        <th
-                                            {...column.getHeaderProps()}
-                                            className="px-6 py-3 border-b border-gray-200 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400"
-                                        >
-                                            <div {...column.getSortByToggleProps()} className="flex items-center justify-between cursor-pointer mb-2">
-                                                <span>{column.render('Header')}</span>
-                                                <span className="ml-2">
-                                                    {column.isSorted
-                                                        ? column.isSortedDesc
-                                                            ? <FontAwesomeIcon icon={faSortDown} className="text-blue-500" />
-                                                            : <FontAwesomeIcon icon={faSortUp} className="text-blue-500" />
-                                                        : <FontAwesomeIcon icon={faSort} className="text-gray-400" />}
-                                                </span>
-                                            </div>
-                                            {column.canFilter ? column.render('Filter') : null}
+            <div className="w-full overflow-auto shadow-lg rounded-lg">
+                <div className="inline-block min-w-full align-middle">
+                    <table {...getTableProps()} className="min-w-full border-collapse overflow-scroll">
+                        <thead className="sticky top-0 z-10">
+                            {headerGroups.map(headerGroup => (
+                                <React.Fragment key={headerGroup.id}>
+                                    <tr {...headerGroup.getHeaderGroupProps()}>
+                                        {headerGroup.headers.map(column => (
+                                            <th
+                                                {...column.getHeaderProps()}
+                                                className="px-4 py-3 border border-gray-300 bg-gray-100 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 uppercase tracking-wider dark:text-gray-300"
+                                            >
+                                                <div {...column.getSortByToggleProps()} className="flex items-center justify-between cursor-pointer mb-2">
+                                                    <span>{column.render('Header')}</span>
+                                                    <span className="ml-2">
+                                                        {column.isSorted
+                                                            ? column.isSortedDesc
+                                                                ? <FontAwesomeIcon icon={faSortDown} className="text-blue-500" />
+                                                                : <FontAwesomeIcon icon={faSortUp} className="text-blue-500" />
+                                                            : <FontAwesomeIcon icon={faSort} className="text-gray-400" />}
+                                                    </span>
+                                                </div>
+                                                {column.canFilter ? column.render('Filter') : null}
+                                            </th>
+                                        ))}
+                                        <th className="px-4 py-3 border border-gray-300 bg-gray-100 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 uppercase tracking-wider dark:text-gray-300">
+                                            Actions
                                         </th>
-                                    ))}
-                                    <th className="px-6 py-3 border-b border-gray-200 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                                        Actions
-                                    </th>
-                                </tr>
-                            </React.Fragment>
-                        ))}
-                    </thead>
-                    <tbody {...getTableBodyProps()} className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-                        {rows.map((row, rowIndex) => {
-                            prepareRow(row);
-                            return (
-                                <tr
-                                    {...row.getRowProps()}
-                                    className={`hover:bg-gray-100 dark:hover:bg-gray-700 ${editAssetId === row.original.id ? 'bg-gray-200 dark:bg-gray-600' : ''}`}
-                                >
-                                    {row.cells.map(cell => (
-                                        <td
-                                            {...cell.getCellProps()}
-                                            className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100"
-                                        >
-                                            {editAssetId === row.original.id ? (
-                                                <input
-                                                    type="text"
-                                                    name={cell.column.id}
-                                                    value={editValues[cell.column.id] || ''}
-                                                    onChange={handleChange}
-                                                    className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none sm:text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-gray-300' : 'border-gray-300 bg-white text-gray-900'}`}
-                                                />
-                                            ) : (
-                                                cell.render('Cell')
-                                            )}
+                                    </tr>
+                                </React.Fragment>
+                            ))}
+                        </thead>
+                        <tbody {...getTableBodyProps()} className="bg-white dark:bg-gray-800">
+                            {rows.map((row, rowIndex) => {
+                                prepareRow(row);
+                                return (
+                                    <tr
+                                        {...row.getRowProps()}
+                                        className={`${
+                                            rowIndex % 2 === 0 
+                                                ? 'bg-white dark:bg-gray-800' 
+                                                : 'bg-gray-50 dark:bg-gray-750'
+                                        } hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-150`}
+                                    >
+                                        {row.cells.map(cell => (
+                                            <td
+                                                {...cell.getCellProps()}
+                                                className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-gray-100"
+                                            >
+                                                {editAssetId === row.original.id ? (
+                                                    <input
+                                                        type="text"
+                                                        name={cell.column.id}
+                                                        value={editValues[cell.column.id] || ''}
+                                                        onChange={handleChange}
+                                                        className={`w-full px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'border-gray-300 bg-white text-gray-900'}`}
+                                                    />
+                                                ) : (
+                                                    <div className="truncate" title={cell.value}>
+                                                        {cell.render('Cell')}
+                                                    </div>
+                                                )}
+                                            </td>
+                                        ))}
+                                        <td className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-sm">
+                                            <div className="flex space-x-2">
+                                                {editAssetId === row.original.id ? (
+                                                    <>
+                                                        <button
+                                                            onClick={handleSaveClick}
+                                                            className={`px-2 py-1 rounded ${darkMode ? 'bg-green-600 text-gray-100 hover:bg-green-700' : 'bg-green-500 text-white hover:bg-green-600'}`}
+                                                            title="Save"
+                                                        >
+                                                            <FontAwesomeIcon icon={faSave} />
+                                                        </button>
+                                                        <button
+                                                            onClick={handleCancelEdit}
+                                                            className={`px-2 py-1 rounded ${darkMode ? 'bg-gray-600 text-gray-100 hover:bg-gray-700' : 'bg-gray-500 text-white hover:bg-gray-600'}`}
+                                                            title="Cancel"
+                                                        >
+                                                            <FontAwesomeIcon icon={faTimes} />
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleEditClick(row.original)}
+                                                            className={`px-2 py-1 rounded ${darkMode ? 'bg-blue-600 text-gray-100 hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                                                            title="Edit"
+                                                        >
+                                                            <FontAwesomeIcon icon={faEdit} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDelete(row.original.id)}
+                                                            className={`px-2 py-1 rounded ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
+                                                            title="Delete"
+                                                        >
+                                                            <FontAwesomeIcon icon={faTrashAlt} />
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </div>
                                         </td>
-                                    ))}
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                        {editAssetId === row.original.id ? (
-                                            <>
-                                                <button
-                                                    onClick={handleSaveClick}
-                                                    className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
-                                                >
-                                                    <FontAwesomeIcon icon={faSave} />
-                                                </button>
-                                                <button
-                                                    onClick={handleCancelEdit}
-                                                    className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-gray-600 text-gray-100 hover:bg-gray-700' : 'bg-gray-500 text-white hover:bg-gray-600'}`}
-                                                >
-                                                    <FontAwesomeIcon icon={faTimes} />
-                                                </button>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <button
-                                                    onClick={() => handleEditClick(row.original)}
-                                                    className={`px-3 py-1 rounded-md ${darkMode ? 'bg-blue-600 text-gray-100 hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
-                                                >
-                                                    <FontAwesomeIcon icon={faEdit} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(row.original.id)}
-                                                    className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
-                                                >
-                                                    <FontAwesomeIcon icon={faTrashAlt} />
-                                                </button>
-                                                
-                                            </>
-                                        )}
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {showDeleteConfirm && (
