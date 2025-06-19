@@ -496,9 +496,9 @@ const CentralDatabase = ({ darkMode }) => {
     );
 
     return (
-        <div className={`min-h-screen p-6 ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
+        <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
             {/* Fixed width header content - always uses full screen width */}
-            <div className="w-full mb-6">
+            <div className="w-full p-6 pb-0">
                 <h1 className="text-3xl font-bold mb-6 text-center text-gray-900 dark:text-gray-100">Central Database</h1>
                 
                 {/* Actions Panel */}
@@ -578,12 +578,12 @@ const CentralDatabase = ({ darkMode }) => {
                 </div>
             </div>
 
-            {/* Table Container - separate from header content */}
-            <div className="w-full">
+            {/* Table Container - completely independent with its own padding */}
+            <div className="w-screen px-6 pb-6">
                 {/* Table Container */}
                 <div className="bg-white shadow-lg rounded-lg dark:bg-gray-800 overflow-hidden">
-                    <div className="overflow-x-auto" style={{ maxHeight: 'calc(100vh - 400px)' }}>
-                        <table {...getTableProps()} className="w-full border-collapse">
+                    <div className="overflow-x-auto overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-lg" style={{ maxHeight: 'calc(100vh - 400px)', minHeight: '400px' }}>
+                        <table {...getTableProps()} className="w-full border-collapse" style={{ minWidth: 'max-content' }}>
                             <thead className="sticky top-0 z-10">
                                 {headerGroups.map(headerGroup => (
                                     <React.Fragment key={headerGroup.id}>
@@ -701,7 +701,7 @@ const CentralDatabase = ({ darkMode }) => {
                 </div>
 
                 {/* Results Summary */}
-                <div className="mt-4 text-sm text-gray-600 dark:text-gray-400 text-center">
+                <div className="mt-4 px-6 text-sm text-gray-600 dark:text-gray-400 text-center">
                     Showing {rows.length} of {preGlobalFilteredRows.length} results
                 </div>
             </div>
