@@ -491,15 +491,14 @@ const CentralDatabase = ({ darkMode }) => {
             </div>
 
             <div className="container w-full overflow-x-auto shadow-lg rounded-lg">
-                <table {...getTableProps()} className="w-full bg-white darkxbg-gray-800" style={{minWidth: '1800px'}}>
+                <table {...getTableProps()} className="table-auto overflow-scroll w-full bg-white darkxbg-gray-800">
                     <thead className="sticky top-0 z-10">
                         {headerGroups.map(headerGroup => (
                             <tr {...headerGroup.getHeaderGroupProps()}>
                                 {headerGroup.headers.map(column => (
                                     <th
                                         {...column.getHeaderProps()}
-                                        className="px-4 py-3 border border-gray-300 bg-gray-100 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap"
-                                        style={{minWidth: '150px'}}
+                                        className="px-4 py-3 border border-gray-300 bg-gray-100 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 uppercase tracking-wider dark:text-gray-300"
                                     >
                                         <div {...column.getSortByToggleProps()} className="flex items-center justify-between cursor-pointer mb-2">
                                             <span>{column.render('Header')}</span>
@@ -514,7 +513,7 @@ const CentralDatabase = ({ darkMode }) => {
                                         {column.canFilter ? column.render('Filter') : null}
                                     </th>
                                 ))}
-                                <th className="px-4 py-3 border border-gray-300 bg-gray-100 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap" style={{minWidth: '120px'}}>
+                                <th className="px-4 py-3 border border-gray-300 bg-gray-100 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 uppercase tracking-wider dark:text-gray-300" style={{minWidth: '100px'}}>
                                     Actions
                                 </th>
                             </tr>
@@ -537,8 +536,7 @@ const CentralDatabase = ({ darkMode }) => {
                                     {row.cells.map(cell => (
                                         <td
                                             {...cell.getCellProps()}
-                                            className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-gray-100 whitespace-nowrap"
-                                            style={{minWidth: '150px'}}
+                                            className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-gray-100"
                                         >
                                             {editAssetId === row.original.id ? (
                                                 <input
@@ -555,7 +553,7 @@ const CentralDatabase = ({ darkMode }) => {
                                             )}
                                         </td>
                                     ))}
-                                    <td className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-sm whitespace-nowrap" style={{minWidth: '120px'}}>
+                                    <td className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-sm whitespace-nowrap">
                                         <div className="flex space-x-2">
                                             {editAssetId === row.original.id ? (
                                                 <>
