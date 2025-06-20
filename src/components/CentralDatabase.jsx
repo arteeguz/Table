@@ -419,11 +419,14 @@ const CentralDatabase = ({ darkMode }) => {
     );
 
     return (
-        <div className={`mx-auto p-4 ${darkMode ? 'dark' : ''}`}>
-            <h1 className="mr-20 text-3xl font-bold mb-4 text-center text-gray-900 darkitext-gray-100">Central Database</h1>
+        <div className={`w-full h-screen flex flex-col ${darkMode ? 'dark' : ''}`}>
+            <div className="px-4 pt-4">
+                <h1 className="text-3xl font-bold mb-4 text-center text-gray-900 dark:text-gray-100">Central Database</h1>
+            </div>
             
-            <div className="bg-white shadow-lg rounded-lg dark:bg-gray-800 mb-8 p-4 w-full">
-                <h2 className="text-xl font-semibold mb-4 text-gray-700 darkitext-gray-300 text-center">Actions</h2>
+            <div className="px-4">
+                <div className="bg-white shadow-lg rounded-lg dark:bg-gray-800 mb-4 p-4 w-full">
+                <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300 text-center">Actions</h2>
                 <div className="flex justify-center">
                     <button
                         onClick={handleFetchAllUserInfo}
@@ -487,11 +490,12 @@ const CentralDatabase = ({ darkMode }) => {
                     )}
                 </div>
 
-            </div>
+                </div>
             </div>
 
-            <div className="container w-full overflow-auto shadow-lg rounded-lg" style={{ maxHeight: '70vh' }}>
-                    <table {...getTableProps()} className="table-auto w-full bg-white dark:bg-gray-800">
+            <div className="flex-grow px-4 pb-4 overflow-hidden">
+                <div className="h-full w-full overflow-auto shadow-lg rounded-lg">
+                    <table {...getTableProps()} className="table-auto w-full bg-white dark:bg-gray-800" style={{ minWidth: 'max-content' }}>
                         <thead>
                             {headerGroups.map(headerGroup => (
                                 <React.Fragment key={headerGroup.id}>
@@ -589,6 +593,7 @@ const CentralDatabase = ({ darkMode }) => {
                             })}
                         </tbody>
                     </table>
+                </div>
             </div>
 
             {showDeleteConfirm && (
