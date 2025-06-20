@@ -9,6 +9,24 @@ import axios from 'axios';
 
 // Custom filter component for each column
 const DefaultColumnFilter = ({ column: { filterValue, setFilter } }) => {
+    // Calculate the actual table width needed based on columns
+    const calculateTableWidth = () => {
+        let width = 0;
+        columns.forEach(col => {
+            if (col.accessor === 'rbc_email' || col.accessor === 'home_drive') {
+                width += 300; // Increased from 250
+            } else {
+                width += 180; // Increased from 150
+            }
+        });
+        width += 200; // Actions column (increased from 150)
+        width += 500; // Extra padding for borders, padding, scrollbar, and safety margin
+        return width;
+    };
+
+    const tableWidth = calculateTableWidth();
+    // Adding 3000px extra to wrapper ensures horizontal scrollbar can reach the end
+
     return (
         <input
             value={filterValue || ''}
@@ -507,7 +525,7 @@ const CentralDatabase = ({ darkMode }) => {
                 <div style={{ 
                     height: '100%',
                     width: '100%',
-                    overflowX: 'scroll',
+                    overflowX: 'auto',
                     overflowY: 'auto',
                     WebkitOverflowScrolling: 'touch',
                     border: `1px solid ${darkMode ? '#374151' : '#e5e7eb'}`,
@@ -515,9 +533,8 @@ const CentralDatabase = ({ darkMode }) => {
                     backgroundColor: darkMode ? '#1f2937' : '#f9fafb',
                     boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
                 }}>
-                    {/* Wide content wrapper - forces horizontal scroll */}
-                    <div style={{ width: '3500px', minWidth: '3500px', display: 'block' }}>
-                        <table {...getTableProps()} className="bg-white dark:bg-gray-800" style={{ width: '100%', boxSizing: 'border-box' }}>
+                    <div style={{ width: `${tableWidth + 3000}px`, paddingBottom: '20px' }}>
+                        <table {...getTableProps()} className="bg-white dark:bg-gray-800" style={{ minWidth: `${tableWidth}px`, tableLayout: 'auto', borderCollapse: 'collapse' }}>
                         <thead className="sticky top-0 z-50 bg-gray-50 dark:bg-gray-700">
                             {headerGroups.map(headerGroup => (
                                 <tr {...headerGroup.getHeaderGroupProps()} key={headerGroup.id}>
@@ -525,7 +542,7 @@ const CentralDatabase = ({ darkMode }) => {
                                             <th
                                                 {...column.getHeaderProps(column.getSortByToggleProps())}
                                                 className="px-4 py-3 border border-gray-300 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400 whitespace-nowrap"
-                                                style={{ minWidth: column.accessor === 'rbc_email' || column.accessor === 'home_drive' ? '250px' : '150px' }}
+                                                style={{ minWidth: column.accessor === 'rbc_email' || column.accessor === 'home_drive' ? '300px' : '180px' }}
                                             >
                                                 {column.render('Header')}
                                                 <span className="ml-2">
@@ -540,7 +557,7 @@ const CentralDatabase = ({ darkMode }) => {
                                                 </div>
                                             </th>
                                         ))}
-                                        <th className="px-4 py-3 border border-gray-300 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400 whitespace-nowrap" style={{ minWidth: '150px' }}>
+                                        <th className="px-4 py-3 border border-gray-300 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400 whitespace-nowrap" style={{ minWidth: '200px' }}>
                                             Actions
                                         </th>
                                     </tr>
@@ -558,7 +575,7 @@ const CentralDatabase = ({ darkMode }) => {
                                             <td
                                                 {...cell.getCellProps()}
                                                 className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100"
-                                                style={{ minWidth: cell.column.accessor === 'rbc_email' || cell.column.accessor === 'home_drive' ? '250px' : '150px' }}
+                                                style={{ minWidth: cell.column.accessor === 'rbc_email' || cell.column.accessor === 'home_drive' ? '300px' : '180px' }}
                                             >
                                                 {editAssetId === row.original.id ? (
                                                     <input
@@ -573,7 +590,7 @@ const CentralDatabase = ({ darkMode }) => {
                                                 )}
                                             </td>
                                         ))}
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100" style={{ minWidth: '150px' }}>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100" style={{ minWidth: '200px' }}>
                                             {editAssetId === row.original.id ? (
                                                 <>
                                                     <button
