@@ -6,7 +6,6 @@ import { useTableContext } from './TableContext';
 import * as XLSX from 'xlsx';
 import axios from 'axios';
 
-
 // Custom filter component for each column
 const DefaultColumnFilter = ({ column: { filterValue, setFilter } }) => {
     return (
@@ -26,6 +25,7 @@ const CentralDatabase = ({ darkMode }) => {
     const [editValues, setEditValues] = useState({});
     const [filterInput, setFilterInput] = useState('');
     const [loadingAllUsers, setLoadingAllUsers] = useState(false);
+    const [loadingUserInfo, setLoadingUserInfo] = useState('');
     const [userInfo, setUserInfo] = useState({});
     const [selectedFile, setSelectedFile] = useState(null);
     const [view, setView] = useState('default');
@@ -37,6 +37,13 @@ const CentralDatabase = ({ darkMode }) => {
     useEffect(() => {
         fetchAssets();
     }, [selectedTableName]);
+
+    useEffect(() => {
+        handleFetchAllUserInfo();
+
+        const interval = setInterval(() => {handleFetchAllUserInfo()}, 2 * 60 * 1000);
+        return () => clearInterval(interval);
+    }, [assets]);
 
     const handleSelectChange = (e) => {
         setSelectedTableName(e.target.value);
@@ -87,7 +94,6 @@ const CentralDatabase = ({ darkMode }) => {
             rbc_email: asset.rbc_email,
             home_drive: asset.home_drive,
             technician: asset.technician
-
         });
     };
 
@@ -111,8 +117,6 @@ const CentralDatabase = ({ darkMode }) => {
             console.error('Failed to save asset', error);
         }
     };
-
-
 
     const handleFetchUserInfo = async (employeeId) => {
         try {
@@ -167,14 +171,7 @@ const CentralDatabase = ({ darkMode }) => {
 
         await Promise.all(userInfoPromises);
         setLoadingAllUsers(false);
-  
-    useEffect(() => {
-        handleFetchAllUserInfo();
-
-        const interval = setInterval(() => {handleFetchAllUserInfo()}, 2 * 60 * 1000);
-        return () => clearInterval(interval);
-    }, [])
-  };
+    };
 
     const updateAssetDetails = async (employeeId, userInfoOutput) => {
         const loginIdMatch = userInfoOutput.match(/SamAccountName\s*:\s*(\S+)/);
@@ -265,7 +262,6 @@ const CentralDatabase = ({ darkMode }) => {
         XLSX.utils.book_append_sheet(wb, ws, 'Assets');
         XLSX.writeFile(wb, 'assets.xlsx');
     };
-
 
     const handleFileUpload = async (file) => {
         const formData = new FormData();
@@ -427,7 +423,7 @@ const CentralDatabase = ({ darkMode }) => {
                 <div className="flex justify-center flex-wrap gap-2">
                     <button
                         onClick={handleFetchAllUserInfo}
-                        className={`px-4 py-2 rounded-md ${darkMode ? 'bg-green-500 text-gray-100 hover:bg-blue-700' : 'bg-green-500 text-white hover:bg-blue-600'}`}
+                        className={`px-4 py-2 rounded-md ${darkMode ? 'bg-green-500 text-gray-100 hover:bg-green-700' : 'bg-green-500 text-white hover:bg-green-600'}`}
                     >
                         <FontAwesomeIcon icon={faSync} className="mr-2" />
                         {loadingAllUsers ? 'Fetching...' : 'Fetch User Data'}
@@ -452,45 +448,48 @@ const CentralDatabase = ({ darkMode }) => {
                         onChange={handleFileChange}
                         style={{ display: 'none' }}
                     />
-                <div className="text-center">
-                    <select
-                        value={view}
-                        onChange={(e) => setView(e.target.value)}
-                        className={`px-4 py-2 rounded-md ${darkMode ? 'bg-gray-800 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-900'}`}
-                    >
-                        <option value="default">View All</option>
-                        <option value="DSS">DSS View</option>
-                        <option value="HR">HR View</option>
-                        <option value="Mobility">Mobility View</option>
-                    </select>
                 </div>
-                <div className="text-center flex items-center gap-2">
-                    <select
-                        value={selectedTableName}
-                        onChange={handleSelectChange}
-                        className={`px-4 py-2 rounded-md ${darkMode ? 'bg-gray-800 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-900'}`}
-                    >
-                        <option value="">Select Year</option>
-                        {tableNames.map((table) => (
-                            <option key={table.table_name} value={table.table_name}>
-                                {table.table_name}
-                            </option>
-                        ))}
-                    </select>
-                    {selectedTableName && (
-                        <button
-                            onClick={() => handleDeleteTable(selectedTableName)}
-                            className={`px-3 py-2 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
-                            title="Delete Table"
+                
+                <div className="flex justify-center flex-wrap gap-4 mt-4">
+                    <div className="text-center">
+                        <select
+                            value={view}
+                            onChange={(e) => setView(e.target.value)}
+                            className={`px-4 py-2 rounded-md ${darkMode ? 'bg-gray-800 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-900'}`}
                         >
-                            <FontAwesomeIcon icon={faTrashAlt} />
-                        </button>
-                    )}
+                            <option value="default">View All</option>
+                            <option value="DSS">DSS View</option>
+                            <option value="HR">HR View</option>
+                            <option value="Mobility">Mobility View</option>
+                        </select>
+                    </div>
+                    <div className="text-center flex items-center gap-2">
+                        <select
+                            value={selectedTableName}
+                            onChange={handleSelectChange}
+                            className={`px-4 py-2 rounded-md ${darkMode ? 'bg-gray-800 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-900'}`}
+                        >
+                            <option value="">Select Year</option>
+                            {tableNames.map((table) => (
+                                <option key={table.table_name} value={table.table_name}>
+                                    {table.table_name}
+                                </option>
+                            ))}
+                        </select>
+                        {selectedTableName && (
+                            <button
+                                onClick={() => handleDeleteTable(selectedTableName)}
+                                className={`px-3 py-2 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
+                                title="Delete Table"
+                            >
+                                <FontAwesomeIcon icon={faTrashAlt} />
+                            </button>
+                        )}
+                    </div>
                 </div>
-
-            </div>
             </div>
 
+            {/* Fixed Table Container */}
             <div className="w-full overflow-auto shadow-lg rounded-lg">
                 <div className="inline-block min-w-full align-middle">
                     <table {...getTableProps()} className="min-w-full border-collapse">
