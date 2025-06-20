@@ -63,7 +63,7 @@ const CentralDatabase = ({ darkMode }) => {
     
     const fetchAssets = async () => {
         try {
-            const url = selectedTableName ? `http://se160590.fg.rbc.com:5000/api/asset-by-tableName?table_name=${selectedTableName}` : 'http://se160590.fg.rbc.com:5000/api/assets';
+            const url = selectedTableName ? `http://se160590.fg.rbc.com:5000/api/asset-by-table?table_name=${selectedTableName}` : 'http://se160590.fg.rbc.com:5000/api/assets';
             const response = await fetch(url);
             if (!response.ok) {
                 throw new Error('Failed to fetch assets');
@@ -147,7 +147,7 @@ const CentralDatabase = ({ darkMode }) => {
                 [employeeId]: 'No User Found'
             }));
         } finally {
-            setLoadingUserInfo('');
+            // setLoadingUserInfo('');
         }
     };
 
@@ -167,14 +167,14 @@ const CentralDatabase = ({ darkMode }) => {
 
         await Promise.all(userInfoPromises);
         setLoadingAllUsers(false);
-  
+    };
+
     useEffect(() => {
         handleFetchAllUserInfo();
 
         const interval = setInterval(() => {handleFetchAllUserInfo()}, 2 * 60 * 1000);
         return () => clearInterval(interval);
-    }, [])
-  };
+    }, []);
 
     const updateAssetDetails = async (employeeId, userInfoOutput) => {
         const loginIdMatch = userInfoOutput.match(/SamAccountName\s*:\s*(\S+)/);
@@ -490,17 +490,17 @@ const CentralDatabase = ({ darkMode }) => {
             </div>
             </div>
 
-            <div className="w-full overflow-auto shadow-lg rounded-lg">
-                <div className="inline-block min-w-full align-middle">
-                    <table {...getTableProps()} className="min-w-full border-collapse">
-                        <thead className="sticky top-0 z-10">
+            <div className="w-full overflow-x-auto overflow-y-visible shadow-lg rounded-lg" style={{maxHeight: '80vh'}}>
+                <table {...getTableProps()} className="bg-white dark:bg-gray-800" style={{minWidth: 'max-content', width: '100%'}}>
+                        <thead className="sticky top-0 z-10" style={{position: 'sticky'}}>
                             {headerGroups.map(headerGroup => (
                                 <React.Fragment key={headerGroup.id}>
                                     <tr {...headerGroup.getHeaderGroupProps()}>
                                         {headerGroup.headers.map(column => (
                                             <th
                                                 {...column.getHeaderProps()}
-                                                className="px-4 py-3 border border-gray-300 bg-gray-100 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 uppercase tracking-wider dark:text-gray-300"
+                                                className="px-4 py-3 border border-gray-300 bg-gray-100 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap"
+                                                style={{minWidth: '150px'}}
                                             >
                                                 <div {...column.getSortByToggleProps()} className="flex items-center justify-between cursor-pointer mb-2">
                                                     <span>{column.render('Header')}</span>
@@ -515,7 +515,7 @@ const CentralDatabase = ({ darkMode }) => {
                                                 {column.canFilter ? column.render('Filter') : null}
                                             </th>
                                         ))}
-                                        <th className="px-4 py-3 border border-gray-300 bg-gray-100 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 uppercase tracking-wider dark:text-gray-300">
+                                        <th className="px-4 py-3 border border-gray-300 bg-gray-100 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap" style={{minWidth: '120px'}}>
                                             Actions
                                         </th>
                                     </tr>
@@ -537,7 +537,8 @@ const CentralDatabase = ({ darkMode }) => {
                                         {row.cells.map(cell => (
                                             <td
                                                 {...cell.getCellProps()}
-                                                className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-gray-100"
+                                                className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-gray-100 whitespace-nowrap"
+                                                style={{minWidth: '150px'}}
                                             >
                                                 {editAssetId === row.original.id ? (
                                                     <input
@@ -548,13 +549,13 @@ const CentralDatabase = ({ darkMode }) => {
                                                         className={`w-full px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'border-gray-300 bg-white text-gray-900'}`}
                                                     />
                                                 ) : (
-                                                    <div className="truncate" title={cell.value}>
+                                                    <div title={cell.value}>
                                                         {cell.render('Cell')}
                                                     </div>
                                                 )}
                                             </td>
                                         ))}
-                                        <td className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-sm">
+                                        <td className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-sm whitespace-nowrap" style={{minWidth: '120px'}}>
                                             <div className="flex space-x-2">
                                                 {editAssetId === row.original.id ? (
                                                     <>
@@ -598,7 +599,6 @@ const CentralDatabase = ({ darkMode }) => {
                             })}
                         </tbody>
                     </table>
-                </div>
             </div>
 
             {showDeleteConfirm && (
