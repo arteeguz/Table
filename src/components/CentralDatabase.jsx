@@ -63,7 +63,7 @@ const CentralDatabase = ({ darkMode }) => {
     
     const fetchAssets = async () => {
         try {
-            const url = selectedTableName ? `http://se160590.fg.rbc.com:5000/api/asset-by-tableName?table_name=${selectedTableName}` : 'http://se160590.fg.rbc.com:5000/api/assets';
+            const url = selectedTableName ? `http://se160590.fg.rbc.com:5000/api/asset-by-table?table_name=${selectedTableName}` : 'http://se160590.fg.rbc.com:5000/api/assets';
             const response = await fetch(url);
             if (!response.ok) {
                 throw new Error('Failed to fetch assets');
@@ -420,14 +420,14 @@ const CentralDatabase = ({ darkMode }) => {
 
     return (
         <div className={`mx-auto p-4 ${darkMode ? 'dark' : ''}`}>
-            <h1 className="mr-20 text-3xl font-bold mb-4 text-center text-gray-900 darkitext-gray-100">Central Database</h1>
+            <h1 className="mt-20 text-3xl font-bold mb-4 text-center text-gray-900 dark:text-gray-100">Central Database</h1>
             
             <div className="bg-white shadow-lg rounded-lg dark:bg-gray-800 mb-8 p-4 w-full">
-                <h2 className="text-xl font-semibold mb-4 text-gray-700 darkitext-gray-300 text-center">Actions</h2>
-                <div className="flex justify-center">
+                <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300 text-center">Actions</h2>
+                <div className="flex justify-center flex-wrap gap-2">
                     <button
                         onClick={handleFetchAllUserInfo}
-                        className={`mr-5 px-4 py-2 rounded-md ${darkMode ? 'bg-green-500 text-gray-100 hover:bg-blue-700' : 'bg-green-500 text-white hover:bg-blue-600'}`}
+                        className={`px-4 py-2 rounded-md ${darkMode ? 'bg-green-500 text-gray-100 hover:bg-blue-700' : 'bg-green-500 text-white hover:bg-blue-600'}`}
                     >
                         <FontAwesomeIcon icon={faSync} className="mr-2" />
                         {loadingAllUsers ? 'Fetching...' : 'Fetch User Data'}
@@ -440,9 +440,10 @@ const CentralDatabase = ({ darkMode }) => {
                     </button>
                     <button
                         onClick={handleButtonClick}
-                        className={`ml-4 px-4 py-2 rounded-md ${darkMode ? 'bg-yellow-600 text-gray-100 hover:bg-yellow-500' : 'bg-yellow-500 text-white hover:bg-yellow-600'}`}
+                        className={`px-4 py-2 rounded-md ${darkMode ? 'bg-yellow-600 text-gray-100 hover:bg-yellow-500' : 'bg-yellow-500 text-white hover:bg-yellow-600'}`}
                     >
                         <FontAwesomeIcon icon={faUpload} className="mr-2"/>
+                        Upload
                     </button>
                     <input
                         id="fileInput"
@@ -451,7 +452,7 @@ const CentralDatabase = ({ darkMode }) => {
                         onChange={handleFileChange}
                         style={{ display: 'none' }}
                     />
-                <div className="ml-10 text-center">
+                <div className="text-center">
                     <select
                         value={view}
                         onChange={(e) => setView(e.target.value)}
@@ -463,7 +464,7 @@ const CentralDatabase = ({ darkMode }) => {
                         <option value="Mobility">Mobility View</option>
                     </select>
                 </div>
-                <div className="ml-10 text-center flex items-center gap-2">
+                <div className="text-center flex items-center gap-2">
                     <select
                         value={selectedTableName}
                         onChange={handleSelectChange}
