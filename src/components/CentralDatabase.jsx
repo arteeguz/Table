@@ -146,8 +146,6 @@ const CentralDatabase = ({ darkMode }) => {
                 ...prevUserInfo,
                 [employeeId]: 'No User Found'
             }));
-        } finally {
-            setLoadingUserInfo('');
         }
     };
 
@@ -167,14 +165,21 @@ const CentralDatabase = ({ darkMode }) => {
 
         await Promise.all(userInfoPromises);
         setLoadingAllUsers(false);
+    };
   
     useEffect(() => {
-        handleFetchAllUserInfo();
+        if (assets.length > 0) {
+            handleFetchAllUserInfo();
+        }
 
-        const interval = setInterval(() => {handleFetchAllUserInfo()}, 2 * 60 * 1000);
+        const interval = setInterval(() => {
+            if (assets.length > 0) {
+                handleFetchAllUserInfo();
+            }
+        }, 2 * 60 * 1000);
+        
         return () => clearInterval(interval);
-    }, [])
-  };
+    }, [assets]);
 
     const updateAssetDetails = async (employeeId, userInfoOutput) => {
         const loginIdMatch = userInfoOutput.match(/SamAccountName\s*:\s*(\S+)/);
@@ -491,6 +496,7 @@ const CentralDatabase = ({ darkMode }) => {
                 </div>
 
                 </div>
+                </div>
             </div>
 
             <div className="flex-grow px-4 pb-4 overflow-hidden">
@@ -553,40 +559,40 @@ const CentralDatabase = ({ darkMode }) => {
                                         ))}
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                                             {editAssetId === row.original.id ? (
-                                                    <>
-                                                        <button
-                                                            onClick={handleSaveClick}
-                                                            className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
-                                                            title="Save"
-                                                        >
-                                                            <FontAwesomeIcon icon={faSave} />
-                                                        </button>
-                                                        <button
-                                                            onClick={handleCancelEdit}
-                                                            className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-gray-600 text-gray-100 hover:bg-gray-700' : 'bg-gray-500 text-white hover:bg-gray-600'}`}
-                                                            title="Cancel"
-                                                        >
-                                                            <FontAwesomeIcon icon={faTimes} />
-                                                        </button>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <button
-                                                            onClick={() => handleEditClick(row.original)}
-                                                            className={`px-3 py-1 rounded-md ${darkMode ? 'bg-blue-600 text-gray-100 hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
-                                                            title="Edit"
-                                                        >
-                                                            <FontAwesomeIcon icon={faEdit} />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleDelete(row.original.id)}
-                                                            className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
-                                                            title="Delete"
-                                                        >
-                                                            <FontAwesomeIcon icon={faTrashAlt} />
-                                                        </button>
-                                                    </>
-                                                )}
+                                                <>
+                                                    <button
+                                                        onClick={handleSaveClick}
+                                                        className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
+                                                        title="Save"
+                                                    >
+                                                        <FontAwesomeIcon icon={faSave} />
+                                                    </button>
+                                                    <button
+                                                        onClick={handleCancelEdit}
+                                                        className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-gray-600 text-gray-100 hover:bg-gray-700' : 'bg-gray-500 text-white hover:bg-gray-600'}`}
+                                                        title="Cancel"
+                                                    >
+                                                        <FontAwesomeIcon icon={faTimes} />
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <button
+                                                        onClick={() => handleEditClick(row.original)}
+                                                        className={`px-3 py-1 rounded-md ${darkMode ? 'bg-blue-600 text-gray-100 hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                                                        title="Edit"
+                                                    >
+                                                        <FontAwesomeIcon icon={faEdit} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(row.original.id)}
+                                                        className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
+                                                        title="Delete"
+                                                    >
+                                                        <FontAwesomeIcon icon={faTrashAlt} />
+                                                    </button>
+                                                </>
+                                            )}
                                         </td>
                                     </tr>
                                 );
