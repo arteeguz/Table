@@ -340,7 +340,7 @@ const CentralDatabase = ({ darkMode }) => {
                 { Header: 'Business Group', accessor: 'business_group', Filter: DefaultColumnFilter },
                 { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter },
                 { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter },
-                { Header: 'Preferred Name', accessor: 'preffered_name', Filter: DefaultColumnFilter },
+                { Header: 'Preferred Name', accessor: 'preferred_name', Filter: DefaultColumnFilter },
                 { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter },
                 { Header: 'RBC Email', accessor: 'rbc_email', Filter: DefaultColumnFilter },
                 { Header: 'Home Drive', accessor: 'home_drive', Filter: DefaultColumnFilter },
@@ -351,7 +351,7 @@ const CentralDatabase = ({ darkMode }) => {
                 { Header: 'Location', accessor: 'location', Filter: DefaultColumnFilter },
                 { Header: 'Phone Number', accessor: 'phone_number', Filter: DefaultColumnFilter },
                 { Header: 'Phone Serial', accessor: 'phone_serial', Filter: DefaultColumnFilter },
-                { Header: 'IMEI', accessor: 'phone_ime1', Filter: DefaultColumnFilter },
+                { Header: 'IMEI', accessor: 'phone_imei', Filter: DefaultColumnFilter },
                 { Header: 'Phone Platform', accessor: 'phone_platform', Filter: DefaultColumnFilter },
                 { Header: 'Onboarding Date', accessor: 'onboarding_date', Filter: DefaultColumnFilter },
                 { Header: 'Assigned Tech', accessor: 'technician', Filter: DefaultColumnFilter }
@@ -387,7 +387,7 @@ const CentralDatabase = ({ darkMode }) => {
                 { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter },
                 { Header: 'Phone Number', accessor: 'phone_number', Filter: DefaultColumnFilter },
                 { Header: 'Phone Serial', accessor: 'phone_serial', Filter: DefaultColumnFilter },
-                { Header: 'IMEI', accessor: 'phone_ime1', Filter: DefaultColumnFilter },
+                { Header: 'IMEI', accessor: 'phone_imei', Filter: DefaultColumnFilter },
                 { Header: 'Phone Platform', accessor: 'phone_platform', Filter: DefaultColumnFilter },
                 { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter },
                 { Header: 'Business Group', accessor: 'business_group', Filter: DefaultColumnFilter },
@@ -415,7 +415,28 @@ const CentralDatabase = ({ darkMode }) => {
     );
 
     return (
-        <div className={`mx-auto p-4 ${darkMode ? 'dark' : ''}`}>
+        <>
+            <style>{`
+                .table-scroll-container {
+                    scrollbar-width: auto;
+                    scrollbar-color: #d1d5db #f3f4f6;
+                }
+                .table-scroll-container::-webkit-scrollbar {
+                    height: 12px;
+                }
+                .table-scroll-container::-webkit-scrollbar-track {
+                    background: #f3f4f6;
+                    border-radius: 6px;
+                }
+                .table-scroll-container::-webkit-scrollbar-thumb {
+                    background: #d1d5db;
+                    border-radius: 6px;
+                }
+                .table-scroll-container::-webkit-scrollbar-thumb:hover {
+                    background: #9ca3af;
+                }
+            `}</style>
+            <div className={`mx-auto p-4 ${darkMode ? 'dark' : ''}`}>
             <h1 className="mt-20 text-3xl font-bold mb-4 text-center text-gray-900 dark:text-gray-100">Central Database</h1>
             
             <div className="bg-white shadow-lg rounded-lg dark:bg-gray-800 mb-8 p-4 w-full">
@@ -489,10 +510,23 @@ const CentralDatabase = ({ darkMode }) => {
                 </div>
             </div>
 
-            {/* Fixed Table Container */}
-            <div className="w-full overflow-auto shadow-lg rounded-lg">
-                <div className="inline-block min-w-full align-middle">
-                    <table {...getTableProps()} className="min-w-full border-collapse">
+            {/* Fixed Table Container - Guaranteed Horizontal Scroll */}
+            <div className="w-full shadow-lg rounded-lg">
+                <div 
+                    className="overflow-x-auto table-scroll-container"
+                    style={{ 
+                        maxWidth: '100%',
+                        WebkitOverflowScrolling: 'touch' // For smooth scrolling on mobile
+                    }}
+                >
+                    <table 
+                        {...getTableProps()} 
+                        className="border-collapse bg-white dark:bg-gray-800"
+                        style={{ 
+                            minWidth: '1400px', // Force minimum width to ensure scrolling
+                            width: 'max-content'
+                        }}
+                    >
                         <thead className="sticky top-0 z-10">
                             {headerGroups.map(headerGroup => (
                                 <React.Fragment key={headerGroup.id}>
@@ -501,6 +535,7 @@ const CentralDatabase = ({ darkMode }) => {
                                             <th
                                                 {...column.getHeaderProps()}
                                                 className="px-4 py-3 border border-gray-300 bg-gray-100 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 uppercase tracking-wider dark:text-gray-300"
+                                                style={{ minWidth: '120px', whiteSpace: 'nowrap' }}
                                             >
                                                 <div {...column.getSortByToggleProps()} className="flex items-center justify-between cursor-pointer mb-2">
                                                     <span>{column.render('Header')}</span>
@@ -515,7 +550,7 @@ const CentralDatabase = ({ darkMode }) => {
                                                 {column.canFilter ? column.render('Filter') : null}
                                             </th>
                                         ))}
-                                        <th className="px-4 py-3 border border-gray-300 bg-gray-100 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 uppercase tracking-wider dark:text-gray-300">
+                                        <th className="px-4 py-3 border border-gray-300 bg-gray-100 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 uppercase tracking-wider dark:text-gray-300" style={{ minWidth: '120px', whiteSpace: 'nowrap' }}>
                                             Actions
                                         </th>
                                     </tr>
@@ -538,6 +573,7 @@ const CentralDatabase = ({ darkMode }) => {
                                             <td
                                                 {...cell.getCellProps()}
                                                 className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-gray-100"
+                                                style={{ minWidth: '120px', whiteSpace: 'nowrap' }}
                                             >
                                                 {editAssetId === row.original.id ? (
                                                     <input
@@ -548,13 +584,13 @@ const CentralDatabase = ({ darkMode }) => {
                                                         className={`w-full px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'border-gray-300 bg-white text-gray-900'}`}
                                                     />
                                                 ) : (
-                                                    <div className="truncate" title={cell.value}>
+                                                    <div title={cell.value}>
                                                         {cell.render('Cell')}
                                                     </div>
                                                 )}
                                             </td>
                                         ))}
-                                        <td className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-sm">
+                                        <td className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-sm" style={{ minWidth: '120px', whiteSpace: 'nowrap' }}>
                                             <div className="flex space-x-2">
                                                 {editAssetId === row.original.id ? (
                                                     <>
@@ -628,6 +664,7 @@ const CentralDatabase = ({ darkMode }) => {
                 </div>
             )}
         </div>
+        </>
     );
 };
 
