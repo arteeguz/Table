@@ -344,7 +344,7 @@ const CentralDatabase = ({ darkMode }) => {
                 { Header: 'Business Group', accessor: 'business_group', Filter: DefaultColumnFilter },
                 { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter },
                 { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter },
-                { Header: 'Preferred Name', accessor: 'preffered_name', Filter: DefaultColumnFilter },
+                { Header: 'Preferred Name', accessor: 'preferred_name', Filter: DefaultColumnFilter },
                 { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter },
                 { Header: 'RBC Email', accessor: 'rbc_email', Filter: DefaultColumnFilter },
                 { Header: 'Home Drive', accessor: 'home_drive', Filter: DefaultColumnFilter },
@@ -355,7 +355,7 @@ const CentralDatabase = ({ darkMode }) => {
                 { Header: 'Location', accessor: 'location', Filter: DefaultColumnFilter },
                 { Header: 'Phone Number', accessor: 'phone_number', Filter: DefaultColumnFilter },
                 { Header: 'Phone Serial', accessor: 'phone_serial', Filter: DefaultColumnFilter },
-                { Header: 'IMEI', accessor: 'phone_ime1', Filter: DefaultColumnFilter },
+                { Header: 'IMEI', accessor: 'phone_imei', Filter: DefaultColumnFilter },
                 { Header: 'Phone Platform', accessor: 'phone_platform', Filter: DefaultColumnFilter },
                 { Header: 'Onboarding Date', accessor: 'onboarding_date', Filter: DefaultColumnFilter },
                 { Header: 'Assigned Tech', accessor: 'technician', Filter: DefaultColumnFilter }
@@ -391,7 +391,7 @@ const CentralDatabase = ({ darkMode }) => {
                 { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter },
                 { Header: 'Phone Number', accessor: 'phone_number', Filter: DefaultColumnFilter },
                 { Header: 'Phone Serial', accessor: 'phone_serial', Filter: DefaultColumnFilter },
-                { Header: 'IMEI', accessor: 'phone_ime1', Filter: DefaultColumnFilter },
+                { Header: 'IMEI', accessor: 'phone_imei', Filter: DefaultColumnFilter },
                 { Header: 'Phone Platform', accessor: 'phone_platform', Filter: DefaultColumnFilter },
                 { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter },
                 { Header: 'Business Group', accessor: 'business_group', Filter: DefaultColumnFilter },
@@ -490,56 +490,49 @@ const CentralDatabase = ({ darkMode }) => {
             </div>
             </div>
 
-            <div className="w-full shadow-lg rounded-lg overflow-hidden">
-                <div className="relative overflow-auto" style={{ maxHeight: '70vh' }}>
-                    <table {...getTableProps()} className="border-collapse" style={{ minWidth: '2500px' }}>
-                        <thead className="sticky top-0 z-20 bg-gray-100 dark:bg-gray-700">
+            <div className="container w-full overflow-auto shadow-lg rounded-lg" style={{ maxHeight: '70vh' }}>
+                    <table {...getTableProps()} className="table-auto w-full bg-white dark:bg-gray-800">
+                        <thead>
                             {headerGroups.map(headerGroup => (
                                 <React.Fragment key={headerGroup.id}>
                                     <tr {...headerGroup.getHeaderGroupProps()}>
                                         {headerGroup.headers.map(column => (
                                             <th
-                                                {...column.getHeaderProps()}
-                                                className="px-4 py-3 border border-gray-300 bg-gray-100 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap"
-                                                style={{ minWidth: column.accessor === 'rbc_email' || column.accessor === 'home_drive' ? '250px' : '150px' }}
+                                                {...column.getHeaderProps(column.getSortByToggleProps())}
+                                                className="px-4 py-3 border border-gray-300 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400 whitespace-nowrap"
                                             >
-                                                <div {...column.getSortByToggleProps()} className="flex items-center justify-between cursor-pointer mb-2">
-                                                    <span>{column.render('Header')}</span>
-                                                    <span className="ml-2">
-                                                        {column.isSorted
-                                                            ? column.isSortedDesc
-                                                                ? <FontAwesomeIcon icon={faSortDown} className="text-blue-500" />
-                                                                : <FontAwesomeIcon icon={faSortUp} className="text-blue-500" />
-                                                            : <FontAwesomeIcon icon={faSort} className="text-gray-400" />}
-                                                    </span>
+                                                {column.render('Header')}
+                                                <span className="ml-2">
+                                                    {column.isSorted
+                                                        ? column.isSortedDesc
+                                                            ? <FontAwesomeIcon icon={faSortDown} className="text-blue-500" />
+                                                            : <FontAwesomeIcon icon={faSortUp} className="text-blue-500" />
+                                                        : <FontAwesomeIcon icon={faSort} className="text-gray-400" />}
+                                                </span>
+                                                <div className="mt-1">
+                                                    {column.canFilter ? column.render('Filter') : null}
                                                 </div>
-                                                {column.canFilter ? column.render('Filter') : null}
                                             </th>
                                         ))}
-                                        <th className="px-4 py-3 border border-gray-300 bg-gray-100 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap" style={{ minWidth: '120px' }}>
+                                        <th className="px-4 py-3 border border-gray-300 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400 whitespace-nowrap">
                                             Actions
                                         </th>
                                     </tr>
                                 </React.Fragment>
                             ))}
                         </thead>
-                        <tbody {...getTableBodyProps()} className="bg-white dark:bg-gray-800">
+                        <tbody {...getTableBodyProps()} className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                             {rows.map((row, rowIndex) => {
                                 prepareRow(row);
                                 return (
                                     <tr
                                         {...row.getRowProps()}
-                                        className={`${
-                                            rowIndex % 2 === 0 
-                                                ? 'bg-white dark:bg-gray-800' 
-                                                : 'bg-gray-50 dark:bg-gray-750'
-                                        } hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-150`}
+                                        className={`hover:bg-gray-100 dark:hover:bg-gray-700 ${editAssetId === row.original.id ? 'bg-gray-200 dark:bg-gray-600' : ''}`}
                                     >
                                         {row.cells.map(cell => (
                                             <td
                                                 {...cell.getCellProps()}
-                                                className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-gray-100 whitespace-nowrap"
-                                                style={{ minWidth: cell.column.id === 'rbc_email' || cell.column.id === 'home_drive' ? '250px' : '150px' }}
+                                                className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100"
                                             >
                                                 {editAssetId === row.original.id ? (
                                                     <input
@@ -547,29 +540,26 @@ const CentralDatabase = ({ darkMode }) => {
                                                         name={cell.column.id}
                                                         value={editValues[cell.column.id] || ''}
                                                         onChange={handleChange}
-                                                        className={`w-32 px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'border-gray-300 bg-white text-gray-900'}`}
+                                                        className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none sm:text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-gray-300' : 'border-gray-300 bg-white text-gray-900'}`}
                                                     />
                                                 ) : (
-                                                    <div className="truncate" title={cell.value}>
-                                                        {cell.render('Cell')}
-                                                    </div>
+                                                    cell.render('Cell')
                                                 )}
                                             </td>
                                         ))}
-                                        <td className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-sm whitespace-nowrap" style={{ minWidth: '120px' }}>
-                                            <div className="flex space-x-2">
-                                                {editAssetId === row.original.id ? (
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                                            {editAssetId === row.original.id ? (
                                                     <>
                                                         <button
                                                             onClick={handleSaveClick}
-                                                            className={`px-2 py-1 rounded ${darkMode ? 'bg-green-600 text-gray-100 hover:bg-green-700' : 'bg-green-500 text-white hover:bg-green-600'}`}
+                                                            className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
                                                             title="Save"
                                                         >
                                                             <FontAwesomeIcon icon={faSave} />
                                                         </button>
                                                         <button
                                                             onClick={handleCancelEdit}
-                                                            className={`px-2 py-1 rounded ${darkMode ? 'bg-gray-600 text-gray-100 hover:bg-gray-700' : 'bg-gray-500 text-white hover:bg-gray-600'}`}
+                                                            className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-gray-600 text-gray-100 hover:bg-gray-700' : 'bg-gray-500 text-white hover:bg-gray-600'}`}
                                                             title="Cancel"
                                                         >
                                                             <FontAwesomeIcon icon={faTimes} />
@@ -579,28 +569,26 @@ const CentralDatabase = ({ darkMode }) => {
                                                     <>
                                                         <button
                                                             onClick={() => handleEditClick(row.original)}
-                                                            className={`px-2 py-1 rounded ${darkMode ? 'bg-blue-600 text-gray-100 hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                                                            className={`px-3 py-1 rounded-md ${darkMode ? 'bg-blue-600 text-gray-100 hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
                                                             title="Edit"
                                                         >
                                                             <FontAwesomeIcon icon={faEdit} />
                                                         </button>
                                                         <button
                                                             onClick={() => handleDelete(row.original.id)}
-                                                            className={`px-2 py-1 rounded ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
+                                                            className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
                                                             title="Delete"
                                                         >
                                                             <FontAwesomeIcon icon={faTrashAlt} />
                                                         </button>
                                                     </>
                                                 )}
-                                            </div>
                                         </td>
                                     </tr>
                                 );
                             })}
                         </tbody>
                     </table>
-                </div>
             </div>
 
             {showDeleteConfirm && (
