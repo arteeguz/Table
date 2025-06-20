@@ -491,9 +491,9 @@ const CentralDatabase = ({ darkMode }) => {
             </div>
 
             <div className="w-full shadow-lg rounded-lg overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table {...getTableProps()} className="w-full border-collapse table-auto">
-                        <thead className="sticky top-0 z-10">
+                <div className="relative overflow-auto" style={{ maxHeight: '70vh' }}>
+                    <table {...getTableProps()} className="border-collapse" style={{ minWidth: '2500px' }}>
+                        <thead className="sticky top-0 z-20 bg-gray-100 dark:bg-gray-700">
                             {headerGroups.map(headerGroup => (
                                 <React.Fragment key={headerGroup.id}>
                                     <tr {...headerGroup.getHeaderGroupProps()}>
@@ -501,6 +501,7 @@ const CentralDatabase = ({ darkMode }) => {
                                             <th
                                                 {...column.getHeaderProps()}
                                                 className="px-4 py-3 border border-gray-300 bg-gray-100 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap"
+                                                style={{ minWidth: column.accessor === 'rbc_email' || column.accessor === 'home_drive' ? '250px' : '150px' }}
                                             >
                                                 <div {...column.getSortByToggleProps()} className="flex items-center justify-between cursor-pointer mb-2">
                                                     <span>{column.render('Header')}</span>
@@ -515,7 +516,7 @@ const CentralDatabase = ({ darkMode }) => {
                                                 {column.canFilter ? column.render('Filter') : null}
                                             </th>
                                         ))}
-                                        <th className="px-4 py-3 border border-gray-300 bg-gray-100 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap">
+                                        <th className="px-4 py-3 border border-gray-300 bg-gray-100 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap" style={{ minWidth: '120px' }}>
                                             Actions
                                         </th>
                                     </tr>
@@ -538,6 +539,7 @@ const CentralDatabase = ({ darkMode }) => {
                                             <td
                                                 {...cell.getCellProps()}
                                                 className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-gray-100 whitespace-nowrap"
+                                                style={{ minWidth: cell.column.id === 'rbc_email' || cell.column.id === 'home_drive' ? '250px' : '150px' }}
                                             >
                                                 {editAssetId === row.original.id ? (
                                                     <input
@@ -545,16 +547,16 @@ const CentralDatabase = ({ darkMode }) => {
                                                         name={cell.column.id}
                                                         value={editValues[cell.column.id] || ''}
                                                         onChange={handleChange}
-                                                        className={`w-full px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'border-gray-300 bg-white text-gray-900'}`}
+                                                        className={`w-32 px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'border-gray-300 bg-white text-gray-900'}`}
                                                     />
                                                 ) : (
-                                                    <div className="truncate max-w-xs" title={cell.value}>
+                                                    <div className="truncate" title={cell.value}>
                                                         {cell.render('Cell')}
                                                     </div>
                                                 )}
                                             </td>
                                         ))}
-                                        <td className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-sm whitespace-nowrap">
+                                        <td className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-sm whitespace-nowrap" style={{ minWidth: '120px' }}>
                                             <div className="flex space-x-2">
                                                 {editAssetId === row.original.id ? (
                                                     <>
