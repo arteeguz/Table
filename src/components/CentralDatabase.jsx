@@ -491,17 +491,9 @@ const CentralDatabase = ({ darkMode }) => {
             </div>
             </div>
 
-            <div 
-                className="w-full shadow-lg rounded-lg table-container" 
-                style={{ 
-                    overflowX: 'scroll',
-                    overflowY: 'auto',
-                    maxWidth: '100%',
-                    position: 'relative'
-                }}
-            >
-                <div className="inline-block min-w-max align-middle">
-                    <table {...getTableProps()} className="border-collapse" style={{ minWidth: '100%' }}>
+            <div className="w-full overflow-auto shadow-lg rounded-lg">
+                <div className="inline-block min-w-full align-middle">
+                    <table {...getTableProps()} className="min-w-full border-collapse">
                         <thead className="sticky top-0 z-10">
                             {headerGroups.map(headerGroup => (
                                 <React.Fragment key={headerGroup.id}>
@@ -509,7 +501,7 @@ const CentralDatabase = ({ darkMode }) => {
                                         {headerGroup.headers.map(column => (
                                             <th
                                                 {...column.getHeaderProps()}
-                                                className="px-4 py-3 border border-gray-300 bg-gray-100 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap"
+                                                className="px-4 py-3 border border-gray-300 bg-gray-100 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 uppercase tracking-wider dark:text-gray-300"
                                             >
                                                 <div {...column.getSortByToggleProps()} className="flex items-center justify-between cursor-pointer mb-2">
                                                     <span>{column.render('Header')}</span>
@@ -524,7 +516,7 @@ const CentralDatabase = ({ darkMode }) => {
                                                 {column.canFilter ? column.render('Filter') : null}
                                             </th>
                                         ))}
-                                        <th className="px-4 py-3 border border-gray-300 bg-gray-100 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 uppercase tracking-wider dark:text-gray-300 whitespace-nowrap">
+                                        <th className="px-4 py-3 border border-gray-300 bg-gray-100 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 uppercase tracking-wider dark:text-gray-300">
                                             Actions
                                         </th>
                                     </tr>
@@ -546,7 +538,7 @@ const CentralDatabase = ({ darkMode }) => {
                                         {row.cells.map(cell => (
                                             <td
                                                 {...cell.getCellProps()}
-                                                className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-gray-100 whitespace-nowrap"
+                                                className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-gray-100"
                                             >
                                                 {editAssetId === row.original.id ? (
                                                     <input
@@ -563,7 +555,7 @@ const CentralDatabase = ({ darkMode }) => {
                                                 )}
                                             </td>
                                         ))}
-                                        <td className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-sm whitespace-nowrap">
+                                        <td className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-sm">
                                             <div className="flex space-x-2">
                                                 {editAssetId === row.original.id ? (
                                                     <>
@@ -636,51 +628,6 @@ const CentralDatabase = ({ darkMode }) => {
                     </div>
                 </div>
             )}
-            
-            <style jsx>{`
-                /* Custom scrollbar styling */
-                .table-container::-webkit-scrollbar {
-                    height: 14px;
-                    display: block !important;
-                }
-                
-                .table-container::-webkit-scrollbar-track {
-                    background: #f1f1f1;
-                    border-radius: 0;
-                }
-                
-                .table-container::-webkit-scrollbar-thumb {
-                    background: #888;
-                    border-radius: 7px;
-                }
-                
-                .table-container::-webkit-scrollbar-thumb:hover {
-                    background: #555;
-                }
-                
-                /* For dark mode */
-                .dark .table-container::-webkit-scrollbar-track {
-                    background: #374151;
-                }
-                
-                .dark .table-container::-webkit-scrollbar-thumb {
-                    background: #6B7280;
-                }
-                
-                .dark .table-container::-webkit-scrollbar-thumb:hover {
-                    background: #9CA3AF;
-                }
-                
-                /* Force scrollbar to always show */
-                .table-container {
-                    scrollbar-width: thin;
-                    scrollbar-color: #888 #f1f1f1;
-                }
-                
-                .dark .table-container {
-                    scrollbar-color: #6B7280 #374151;
-                }
-            `}</style>
         </div>
     );
 };
