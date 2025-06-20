@@ -146,8 +146,6 @@ const CentralDatabase = ({ darkMode }) => {
                 ...prevUserInfo,
                 [employeeId]: 'No User Found'
             }));
-        } finally {
-            // setLoadingUserInfo('');
         }
     };
 
@@ -168,13 +166,20 @@ const CentralDatabase = ({ darkMode }) => {
         await Promise.all(userInfoPromises);
         setLoadingAllUsers(false);
     };
-    
+  
     useEffect(() => {
-        handleFetchAllUserInfo();
+        if (assets.length > 0) {
+            handleFetchAllUserInfo();
+        }
 
-        const interval = setInterval(() => {handleFetchAllUserInfo()}, 2 * 60 * 1000);
+        const interval = setInterval(() => {
+            if (assets.length > 0) {
+                handleFetchAllUserInfo();
+            }
+        }, 2 * 60 * 1000);
+        
         return () => clearInterval(interval);
-    }, []);
+    }, [assets]);
 
     const updateAssetDetails = async (employeeId, userInfoOutput) => {
         const loginIdMatch = userInfoOutput.match(/SamAccountName\s*:\s*(\S+)/);
@@ -355,7 +360,7 @@ const CentralDatabase = ({ darkMode }) => {
                 { Header: 'Location', accessor: 'location', Filter: DefaultColumnFilter },
                 { Header: 'Phone Number', accessor: 'phone_number', Filter: DefaultColumnFilter },
                 { Header: 'Phone Serial', accessor: 'phone_serial', Filter: DefaultColumnFilter },
-                { Header: 'IMEI', accessor: 'phone_ime1', Filter: DefaultColumnFilter },
+                { Header: 'IMEI', accessor: 'phone_imei', Filter: DefaultColumnFilter },
                 { Header: 'Phone Platform', accessor: 'phone_platform', Filter: DefaultColumnFilter },
                 { Header: 'Onboarding Date', accessor: 'onboarding_date', Filter: DefaultColumnFilter },
                 { Header: 'Assigned Tech', accessor: 'technician', Filter: DefaultColumnFilter }
@@ -391,7 +396,7 @@ const CentralDatabase = ({ darkMode }) => {
                 { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter },
                 { Header: 'Phone Number', accessor: 'phone_number', Filter: DefaultColumnFilter },
                 { Header: 'Phone Serial', accessor: 'phone_serial', Filter: DefaultColumnFilter },
-                { Header: 'IMEI', accessor: 'phone_ime1', Filter: DefaultColumnFilter },
+                { Header: 'IMEI', accessor: 'phone_imei', Filter: DefaultColumnFilter },
                 { Header: 'Phone Platform', accessor: 'phone_platform', Filter: DefaultColumnFilter },
                 { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter },
                 { Header: 'Business Group', accessor: 'business_group', Filter: DefaultColumnFilter },
@@ -419,12 +424,15 @@ const CentralDatabase = ({ darkMode }) => {
     );
 
     return (
-        <div className={`mx-auto p-4 ${darkMode ? 'dark' : ''}`}>
-            <h1 className="mr-20 text-3xl font-bold mb-4 text-center text-gray-900 darkitext-gray-100">Central Database</h1>
+        <div className={`w-full h-screen flex flex-col ${darkMode ? 'dark' : ''}`} style={{ overflow: 'hidden' }}>
+            <div className="px-4 pt-4">
+                <h1 className="text-3xl font-bold mb-4 text-center text-gray-900 dark:text-gray-100">Central Database</h1>
+            </div>
             
-            <div className="bg-white shadow-lg rounded-lg dark:bg-gray-800 mb-8 p-4 w-full">
-                <h2 className="text-xl font-semibold mb-4 text-gray-700 darkitext-gray-300 text-center">Actions</h2>
-                <div className="flex justify-center">
+            <div className="px-4">
+                <div className="bg-white shadow-lg rounded-lg dark:bg-gray-800 mb-4 p-4 w-full">
+                <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300 text-center">Actions</h2>
+                <div className="flex flex-wrap justify-center gap-2 overflow-x-auto">
                     <button
                         onClick={handleFetchAllUserInfo}
                         className={`mr-5 px-4 py-2 rounded-md ${darkMode ? 'bg-green-500 text-gray-100 hover:bg-blue-700' : 'bg-green-500 text-white hover:bg-blue-600'}`}
@@ -441,8 +449,10 @@ const CentralDatabase = ({ darkMode }) => {
                     <button
                         onClick={handleButtonClick}
                         className={`ml-4 px-4 py-2 rounded-md ${darkMode ? 'bg-yellow-600 text-gray-100 hover:bg-yellow-500' : 'bg-yellow-500 text-white hover:bg-yellow-600'}`}
+                        title="Upload Excel File"
                     >
                         <FontAwesomeIcon icon={faUpload} className="mr-2"/>
+                        Upload
                     </button>
                     <input
                         id="fileInput"
@@ -487,86 +497,95 @@ const CentralDatabase = ({ darkMode }) => {
                     )}
                 </div>
 
-            </div>
+                </div>
+                </div>
             </div>
 
-            <div className="container w-full overflow-x-auto shadow-lg rounded-lg">
-                <table {...getTableProps()} className="table-auto overflow-scroll w-full bg-white darkxbg-gray-800">
-                    <thead className="sticky top-0 z-10">
-                        {headerGroups.map(headerGroup => (
-                            <tr {...headerGroup.getHeaderGroupProps()}>
-                                {headerGroup.headers.map(column => (
-                                    <th
-                                        {...column.getHeaderProps()}
-                                        className="px-4 py-3 border border-gray-300 bg-gray-100 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 uppercase tracking-wider dark:text-gray-300"
-                                    >
-                                        <div {...column.getSortByToggleProps()} className="flex items-center justify-between cursor-pointer mb-2">
-                                            <span>{column.render('Header')}</span>
-                                            <span className="ml-2">
-                                                {column.isSorted
-                                                    ? column.isSortedDesc
-                                                        ? <FontAwesomeIcon icon={faSortDown} className="text-blue-500" />
-                                                        : <FontAwesomeIcon icon={faSortUp} className="text-blue-500" />
-                                                    : <FontAwesomeIcon icon={faSort} className="text-gray-400" />}
-                                            </span>
-                                        </div>
-                                        {column.canFilter ? column.render('Filter') : null}
-                                    </th>
-                                ))}
-                                <th className="px-4 py-3 border border-gray-300 bg-gray-100 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 uppercase tracking-wider dark:text-gray-300" style={{minWidth: '100px'}}>
-                                    Actions
-                                </th>
-                            </tr>
-                        ))}
-                    </thead>
-                    <tbody {...getTableBodyProps()} className="bg-white dark:bg-gray-800">
-                        {rows.map((row, rowIndex) => {
-                            prepareRow(row);
-                            return (
-                                <tr
-                                    {...row.getRowProps()}
-                                    className={`${
-                                        rowIndex % 2 === 0 
-                                            ? 'bg-white dark:bg-gray-800' 
-                                            : 'bg-gray-50 dark:bg-gray-750'
-                                    } hover:bg-blue-50 dark:hover:bg-gray-700 ${
-                                        editAssetId === row.original.id ? 'bg-gray-200 dark:bg-gray-600' : ''
-                                    }`}
-                                >
-                                    {row.cells.map(cell => (
-                                        <td
-                                            {...cell.getCellProps()}
-                                            className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-gray-100"
-                                        >
-                                            {editAssetId === row.original.id ? (
-                                                <input
-                                                    type="text"
-                                                    name={cell.column.id}
-                                                    value={editValues[cell.column.id] || ''}
-                                                    onChange={handleChange}
-                                                    className={`w-full px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'border-gray-300 bg-white text-gray-900'}`}
-                                                />
-                                            ) : (
-                                                <div title={cell.value}>
-                                                    {cell.render('Cell')}
+            {/* Table Container - Flex container that takes remaining height */}
+            <div style={{ flex: 1, padding: '0 16px 16px', minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                {/* Scrollable wrapper - forces both scrollbars */}
+                <div style={{ 
+                    height: '100%',
+                    width: '100%',
+                    overflowX: 'scroll',
+                    overflowY: 'auto',
+                    WebkitOverflowScrolling: 'touch',
+                    border: `1px solid ${darkMode ? '#374151' : '#e5e7eb'}`,
+                    borderRadius: '8px',
+                    backgroundColor: darkMode ? '#1f2937' : '#f9fafb',
+                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                }}>
+                    {/* Wide content wrapper - forces horizontal scroll */}
+                    <div style={{ width: '3500px', minWidth: '3500px', display: 'block' }}>
+                        <table {...getTableProps()} className="bg-white dark:bg-gray-800" style={{ width: '100%', boxSizing: 'border-box' }}>
+                        <thead className="sticky top-0 z-50 bg-gray-50 dark:bg-gray-700">
+                            {headerGroups.map(headerGroup => (
+                                <tr {...headerGroup.getHeaderGroupProps()} key={headerGroup.id}>
+                                        {headerGroup.headers.map(column => (
+                                            <th
+                                                {...column.getHeaderProps(column.getSortByToggleProps())}
+                                                className="px-4 py-3 border border-gray-300 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400 whitespace-nowrap"
+                                                style={{ minWidth: column.accessor === 'rbc_email' || column.accessor === 'home_drive' ? '250px' : '150px' }}
+                                            >
+                                                {column.render('Header')}
+                                                <span className="ml-2">
+                                                    {column.isSorted
+                                                        ? column.isSortedDesc
+                                                            ? <FontAwesomeIcon icon={faSortDown} className="text-blue-500" />
+                                                            : <FontAwesomeIcon icon={faSortUp} className="text-blue-500" />
+                                                        : <FontAwesomeIcon icon={faSort} className="text-gray-400" />}
+                                                </span>
+                                                <div className="mt-1">
+                                                    {column.canFilter ? column.render('Filter') : null}
                                                 </div>
-                                            )}
-                                        </td>
-                                    ))}
-                                    <td className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-sm whitespace-nowrap">
-                                        <div className="flex space-x-2">
+                                            </th>
+                                        ))}
+                                        <th className="px-4 py-3 border border-gray-300 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400 whitespace-nowrap" style={{ minWidth: '150px' }}>
+                                            Actions
+                                        </th>
+                                    </tr>
+                            ))}
+                        </thead>
+                        <tbody {...getTableBodyProps()} className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                            {rows.map((row, rowIndex) => {
+                                prepareRow(row);
+                                return (
+                                    <tr
+                                        {...row.getRowProps()}
+                                        className={`hover:bg-gray-100 dark:hover:bg-gray-700 ${editAssetId === row.original.id ? 'bg-gray-200 dark:bg-gray-600' : ''}`}
+                                    >
+                                        {row.cells.map(cell => (
+                                            <td
+                                                {...cell.getCellProps()}
+                                                className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100"
+                                                style={{ minWidth: cell.column.accessor === 'rbc_email' || cell.column.accessor === 'home_drive' ? '250px' : '150px' }}
+                                            >
+                                                {editAssetId === row.original.id ? (
+                                                    <input
+                                                        type="text"
+                                                        name={cell.column.id}
+                                                        value={editValues[cell.column.id] || ''}
+                                                        onChange={handleChange}
+                                                        className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none sm:text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-gray-300' : 'border-gray-300 bg-white text-gray-900'}`}
+                                                    />
+                                                ) : (
+                                                    cell.render('Cell')
+                                                )}
+                                            </td>
+                                        ))}
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100" style={{ minWidth: '150px' }}>
                                             {editAssetId === row.original.id ? (
                                                 <>
                                                     <button
                                                         onClick={handleSaveClick}
-                                                        className={`px-2 py-1 rounded ${darkMode ? 'bg-green-600 text-gray-100 hover:bg-green-700' : 'bg-green-500 text-white hover:bg-green-600'}`}
+                                                        className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
                                                         title="Save"
                                                     >
                                                         <FontAwesomeIcon icon={faSave} />
                                                     </button>
                                                     <button
                                                         onClick={handleCancelEdit}
-                                                        className={`ml-2 px-2 py-1 rounded ${darkMode ? 'bg-gray-600 text-gray-100 hover:bg-gray-700' : 'bg-gray-500 text-white hover:bg-gray-600'}`}
+                                                        className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-gray-600 text-gray-100 hover:bg-gray-700' : 'bg-gray-500 text-white hover:bg-gray-600'}`}
                                                         title="Cancel"
                                                     >
                                                         <FontAwesomeIcon icon={faTimes} />
@@ -576,27 +595,28 @@ const CentralDatabase = ({ darkMode }) => {
                                                 <>
                                                     <button
                                                         onClick={() => handleEditClick(row.original)}
-                                                        className={`px-2 py-1 rounded ${darkMode ? 'bg-blue-600 text-gray-100 hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                                                        className={`px-3 py-1 rounded-md ${darkMode ? 'bg-blue-600 text-gray-100 hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
                                                         title="Edit"
                                                     >
                                                         <FontAwesomeIcon icon={faEdit} />
                                                     </button>
                                                     <button
                                                         onClick={() => handleDelete(row.original.id)}
-                                                        className={`ml-2 px-2 py-1 rounded ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
+                                                        className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
                                                         title="Delete"
                                                     >
                                                         <FontAwesomeIcon icon={faTrashAlt} />
                                                     </button>
                                                 </>
                                             )}
-                                        </div>
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
             {showDeleteConfirm && (
