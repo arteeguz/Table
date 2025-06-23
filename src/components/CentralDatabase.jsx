@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSave, faTimes, faEdit, faUser, faTrashAlt, faFileExcel, faSync, faUpload } from '@fortawesome/free-solid-svg-icons';
+import { faSave, faTimes, faEdit, faUser, faTrashAlt, faFileExcel, faSync, faUpload, faTable, faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
 import { useTable, useFilters, useSortBy } from 'react-table';
 import { useTableContext } from './TableContext';
 import * as XLSX from 'xlsx';
@@ -21,9 +21,34 @@ const CentralDatabase = ({ darkMode }) => {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [tableToDelete, setTableToDelete] = useState('');
 
+    // START: Excel-like Mass Edit - New State Variables
+    const [isGridEditMode, setIsGridEditMode] = useState(false);
+    const [gridData, setGridData] = useState([]);
+    const [selectedCell, setSelectedCell] = useState({ rowIndex: null, columnId: null });
+    const [selectedRange, setSelectedRange] = useState({ start: null, end: null });
+    const [isSelecting, setIsSelecting] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
+    const inputRefs = useRef({});
+    // END: Excel-like Mass Edit - New State Variables
+
     useEffect(() => {
         fetchAssets();
     }, [selectedTableName]);
+
+    // START: Excel-like Mass Edit - Global Mouse Events
+    useEffect(() => {
+        const handleGlobalMouseUp = () => {
+            setIsDragging(false);
+        };
+
+        if (isGridEditMode) {
+            document.addEventListener('mouseup', handleGlobalMouseUp);
+            return () => {
+                document.removeEventListener('mouseup', handleGlobalMouseUp);
+            };
+        }
+    }, [isGridEditMode]);
+    // END: Excel-like Mass Edit - Global Mouse Events
 
     const handleSelectChange = (e) => {
         setSelectedTableName(e.target.value);
@@ -61,6 +86,336 @@ const CentralDatabase = ({ darkMode }) => {
             console.error('Failed to fetch assets:', error);
         }
     };
+
+    // START: Excel-like Mass Edit - Grid Functions
+    const toggleGridEditMode = () => {
+        if (isGridEditMode) {
+            // Exit grid mode
+            setIsGridEditMode(false);
+            setSelectedCell({ rowIndex: null, columnId: null });
+            setSelectedRange({ start: null, end: null });
+            setIsSelecting(false);
+            setIsDragging(false);
+        } else {
+            // Enter grid mode
+            setIsGridEditMode(true);
+            setGridData([...assets]);
+        }
+    };
+
+    const handleGridCellChange = (rowIndex, columnId, value) => {
+        const updatedGridData = [...gridData];
+        
+        // If there's a selected range, apply change to all cells in range
+        if (selectedRange.start && selectedRange.end) {
+            const { start, end } = selectedRange;
+            const startRow = Math.min(start.rowIndex, end.rowIndex);
+            const endRow = Math.max(start.rowIndex, end.rowIndex);
+            const columns = getCurrentColumns();
+            const startColIndex = Math.min(
+                columns.findIndex(col => col.accessor === start.columnId),
+                columns.findIndex(col => col.accessor === end.columnId)
+            );
+            const endColIndex = Math.max(
+                columns.findIndex(col => col.accessor === start.columnId),
+                columns.findIndex(col => col.accessor === end.columnId)
+            );
+
+            for (let r = startRow; r <= endRow; r++) {
+                for (let c = startColIndex; c <= endColIndex; c++) {
+                    const colId = columns[c].accessor;
+                    updatedGridData[r] = {
+                        ...updatedGridData[r],
+                        [colId]: value
+                    };
+                }
+            }
+        } else {
+            // Single cell change
+            updatedGridData[rowIndex] = {
+                ...updatedGridData[rowIndex],
+                [columnId]: value
+            };
+        }
+        
+        setGridData(updatedGridData);
+    };
+
+    const handleCellClick = (rowIndex, columnId, event) => {
+        if (event.shiftKey && selectedCell.rowIndex !== null) {
+            // Shift+click for range selection
+            setSelectedRange({
+                start: selectedCell,
+                end: { rowIndex, columnId }
+            });
+        } else {
+            // Regular click
+            setSelectedCell({ rowIndex, columnId });
+            setSelectedRange({ start: null, end: null });
+            setIsSelecting(false);
+        }
+        
+        // Focus the input
+        const inputKey = `${rowIndex}-${columnId}`;
+        if (inputRefs.current[inputKey]) {
+            inputRefs.current[inputKey].focus();
+        }
+    };
+
+    const handleMouseDown = (rowIndex, columnId, event) => {
+        if (event.button === 0) { // Left mouse button
+            setIsDragging(true);
+            setSelectedCell({ rowIndex, columnId });
+            setSelectedRange({ start: { rowIndex, columnId }, end: null });
+        }
+    };
+
+    const handleMouseEnter = (rowIndex, columnId) => {
+        if (isDragging && selectedRange.start) {
+            setSelectedRange({
+                ...selectedRange,
+                end: { rowIndex, columnId }
+            });
+        }
+    };
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    const isCellInRange = (rowIndex, columnId) => {
+        if (!selectedRange.start || !selectedRange.end) return false;
+        
+        const { start, end } = selectedRange;
+        const startRow = Math.min(start.rowIndex, end.rowIndex);
+        const endRow = Math.max(start.rowIndex, end.rowIndex);
+        
+        const columns = getCurrentColumns();
+        const startColIndex = Math.min(
+            columns.findIndex(col => col.accessor === start.columnId),
+            columns.findIndex(col => col.accessor === end.columnId)
+        );
+        const endColIndex = Math.max(
+            columns.findIndex(col => col.accessor === start.columnId),
+            columns.findIndex(col => col.accessor === end.columnId)
+        );
+        const currentColIndex = columns.findIndex(col => col.accessor === columnId);
+
+        return rowIndex >= startRow && rowIndex <= endRow && 
+               currentColIndex >= startColIndex && currentColIndex <= endColIndex;
+    };
+
+    const handleKeyDown = (e, rowIndex, columnId) => {
+        const currentColumns = getCurrentColumns();
+        const currentColumnIndex = currentColumns.findIndex(col => col.accessor === columnId);
+        
+        switch (e.key) {
+            case 'Enter':
+                e.preventDefault();
+                // Move to next row, same column
+                if (rowIndex < gridData.length - 1) {
+                    handleCellClick(rowIndex + 1, columnId, e);
+                }
+                break;
+            case 'Tab':
+                e.preventDefault();
+                // Move to next column
+                if (e.shiftKey) {
+                    // Shift+Tab: move backwards
+                    if (currentColumnIndex > 0) {
+                        handleCellClick(rowIndex, currentColumns[currentColumnIndex - 1].accessor, e);
+                    } else if (rowIndex > 0) {
+                        handleCellClick(rowIndex - 1, currentColumns[currentColumns.length - 1].accessor, e);
+                    }
+                } else {
+                    // Tab: move forwards
+                    if (currentColumnIndex < currentColumns.length - 1) {
+                        handleCellClick(rowIndex, currentColumns[currentColumnIndex + 1].accessor, e);
+                    } else if (rowIndex < gridData.length - 1) {
+                        handleCellClick(rowIndex + 1, currentColumns[0].accessor, e);
+                    }
+                }
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+                if (rowIndex > 0) {
+                    handleCellClick(rowIndex - 1, columnId, e);
+                }
+                break;
+            case 'ArrowDown':
+                e.preventDefault();
+                if (rowIndex < gridData.length - 1) {
+                    handleCellClick(rowIndex + 1, columnId, e);
+                }
+                break;
+            case 'ArrowLeft':
+                e.preventDefault();
+                if (currentColumnIndex > 0) {
+                    handleCellClick(rowIndex, currentColumns[currentColumnIndex - 1].accessor, e);
+                }
+                break;
+            case 'ArrowRight':
+                e.preventDefault();
+                if (currentColumnIndex < currentColumns.length - 1) {
+                    handleCellClick(rowIndex, currentColumns[currentColumnIndex + 1].accessor, e);
+                }
+                break;
+            case 'Delete':
+            case 'Backspace':
+                e.preventDefault();
+                // Clear selected cells
+                if (selectedRange.start && selectedRange.end) {
+                    handleGridCellChange(rowIndex, columnId, '');
+                } else {
+                    handleGridCellChange(rowIndex, columnId, '');
+                }
+                break;
+        }
+    };
+
+    const handlePaste = (e, rowIndex, columnId) => {
+        e.preventDefault();
+        const pasteData = e.clipboardData.getData('text');
+        const rows = pasteData.split('\n').filter(row => row.trim() !== '');
+        const currentColumns = getCurrentColumns();
+        const currentColumnIndex = currentColumns.findIndex(col => col.accessor === columnId);
+        
+        let updatedGridData = [...gridData];
+        
+        rows.forEach((row, rowOffset) => {
+            const cells = row.split('\t');
+            
+            cells.forEach((cell, cellOffset) => {
+                const targetRowIndex = rowIndex + rowOffset;
+                const targetColumnIndex = currentColumnIndex + cellOffset;
+                
+                if (targetRowIndex < updatedGridData.length && targetColumnIndex < currentColumns.length) {
+                    const targetColumnId = currentColumns[targetColumnIndex].accessor;
+                    updatedGridData[targetRowIndex] = {
+                        ...updatedGridData[targetRowIndex],
+                        [targetColumnId]: cell.trim()
+                    };
+                }
+            });
+        });
+        
+        setGridData(updatedGridData);
+        
+        // Update selection range based on pasted data
+        const endRowIndex = Math.min(rowIndex + rows.length - 1, gridData.length - 1);
+        const maxCells = Math.max(...rows.map(row => row.split('\t').length));
+        const endColumnIndex = Math.min(currentColumnIndex + maxCells - 1, currentColumns.length - 1);
+        
+        setSelectedRange({
+            start: { rowIndex, columnId },
+            end: { rowIndex: endRowIndex, columnId: currentColumns[endColumnIndex].accessor }
+        });
+    };
+
+    const handleInput = (e, rowIndex, columnId) => {
+        // Apply input to selected range if exists
+        handleGridCellChange(rowIndex, columnId, e.target.value);
+    };
+
+    const saveGridChanges = async () => {
+        try {
+            const promises = gridData.map(async (asset) => {
+                const response = await fetch(`http://se160590.fg.rbc.com:5000/api/assets/${asset.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(asset),
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to update asset ${asset.id}`);
+                }
+                return response.json();
+            });
+
+            await Promise.all(promises);
+            setAssets([...gridData]);
+            setIsGridEditMode(false);
+            alert('All changes saved successfully!');
+        } catch (error) {
+            console.error('Failed to save grid changes:', error);
+            alert('Failed to save some changes. Please try again.');
+        }
+    };
+
+    const cancelGridChanges = () => {
+        setIsGridEditMode(false);
+        setGridData([]);
+        setSelectedCell({ rowIndex: null, columnId: null });
+        setSelectedRange({ start: null, end: null });
+        setIsSelecting(false);
+        setIsDragging(false);
+    };
+
+    const getCurrentColumns = () => {
+        if (view === 'default') {
+            return [
+                { Header: 'Employee ID', accessor: 'employee_id' },
+                { Header: 'Business Group', accessor: 'business_group' },
+                { Header: 'Login ID', accessor: 'login_id' },
+                { Header: 'First Name', accessor: 'first_name' },
+                { Header: 'Preferred Name', accessor: 'preffered_name' },
+                { Header: 'Last Name', accessor: 'last_name' },
+                { Header: 'RBC Email', accessor: 'rbc_email' },
+                { Header: 'Home Drive', accessor: 'home_drive' },
+                { Header: 'Asset Number', accessor: 'asset_number' },
+                { Header: 'School', accessor: 'school' },
+                { Header: 'Business Manager', accessor: 'business_manager' },
+                { Header: 'Transit', accessor: 'transit' },
+                { Header: 'Location', accessor: 'location' },
+                { Header: 'Phone Number', accessor: 'phone_number' },
+                { Header: 'Phone Serial', accessor: 'phone_serial' },
+                { Header: 'IME1', accessor: 'phone_ime1' },
+                { Header: 'Phone Platform', accessor: 'phone_platform' },
+                { Header: 'Onboarding Date', accessor: 'onboarding_date' },
+                { Header: 'Assigned Tech', accessor: 'technician' }
+            ];
+        } else if (view === 'DSS') {
+            return [
+                { Header: 'Employee ID', accessor: 'employee_id' },
+                { Header: 'Business Group', accessor: 'business_group' },
+                { Header: 'Asset Number', accessor: 'asset_number' },
+                { Header: 'Login ID', accessor: 'login_id' },
+                { Header: 'First Name', accessor: 'first_name' },
+                { Header: 'Last Name', accessor: 'last_name' },
+                { Header: 'RBC Email', accessor: 'rbc_email' },
+                { Header: 'Onboarding Date', accessor: 'onboarding_date' },
+                { Header: 'Assigned Tech', accessor: 'technician' },
+            ];
+        } else if (view === 'HR') {
+            return [
+                { Header: 'Business Group', accessor: 'business_group' },
+                { Header: 'First Name', accessor: 'first_name' },
+                { Header: 'Last Name', accessor: 'last_name' },
+                { Header: 'School', accessor: 'school' },
+                { Header: 'Business Manager', accessor: 'business_manager' },
+                { Header: 'Transit', accessor: 'transit' },
+                { Header: 'Location', accessor: 'location' },
+                { Header: 'Employee ID', accessor: 'employee_id' },
+                { Header: 'Login ID', accessor: 'login_id' },
+            ];
+        } else if (view === 'Mobility') {
+            return [
+                { Header: 'First Name', accessor: 'first_name' },
+                { Header: 'Last Name', accessor: 'last_name' },
+                { Header: 'Phone Number', accessor: 'phone_number' },
+                { Header: 'Phone Serial', accessor: 'phone_serial' },
+                { Header: 'IME1', accessor: 'phone_ime1' },
+                { Header: 'Phone Platform', accessor: 'phone_platform' },
+                { Header: 'Employee ID', accessor: 'employee_id' },
+                { Header: 'Business Group', accessor: 'business_group' },
+                { Header: 'Login ID', accessor: 'login_id' },
+            ];
+        }
+        return [];
+    };
+    // END: Excel-like Mass Edit - Grid Functions
 
     const handleEditClick = (asset) => {
         setEditAssetId(asset.id);
@@ -395,7 +750,7 @@ const CentralDatabase = ({ darkMode }) => {
     } = useTable(
         {
             columns,
-            data: assets,
+            data: isGridEditMode ? gridData : assets,
         },
         useFilters,
         useSortBy
@@ -427,6 +782,26 @@ const CentralDatabase = ({ darkMode }) => {
                     >
                         <FontAwesomeIcon icon={faUpload} className="mr-2"/>
                     </button>
+                    {/* START: Excel-like Mass Edit - Toggle Button */}
+                    <button
+                        onClick={toggleGridEditMode}
+                        disabled={assets.length === 0}
+                        className={`ml-4 px-4 py-2 rounded-md ${
+                            assets.length === 0 
+                                ? 'bg-gray-400 text-gray-600 cursor-not-allowed' 
+                                : isGridEditMode
+                                    ? darkMode 
+                                        ? 'bg-red-600 text-gray-100 hover:bg-red-700' 
+                                        : 'bg-red-500 text-white hover:bg-red-600'
+                                    : darkMode 
+                                        ? 'bg-purple-600 text-gray-100 hover:bg-purple-700' 
+                                        : 'bg-purple-500 text-white hover:bg-purple-600'
+                        }`}
+                    >
+                        <FontAwesomeIcon icon={faTable} className="mr-2"/>
+                        {isGridEditMode ? 'Exit Grid Mode' : 'Mass Edit'}
+                    </button>
+                    {/* END: Excel-like Mass Edit - Toggle Button */}
                     <input
                         id="fileInput"
                         type="file"
@@ -439,6 +814,7 @@ const CentralDatabase = ({ darkMode }) => {
                         value={view}
                         onChange={(e) => setView(e.target.value)}
                         className={`px-4 py-2 rounded-md ${darkMode ? 'bg-gray-800 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-900'}`}
+                        disabled={isGridEditMode}
                     >
                         <option value="default">View All</option>
                         <option value="DSS">DSS View</option>
@@ -451,6 +827,7 @@ const CentralDatabase = ({ darkMode }) => {
                         value={selectedTableName}
                         onChange={handleSelectChange}
                         className={`px-4 py-2 rounded-md ${darkMode ? 'bg-gray-800 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-900'}`}
+                        disabled={isGridEditMode}
                     >
                         <option value="">Select Year</option>
                         {tableNames.map((table) => (
@@ -459,7 +836,7 @@ const CentralDatabase = ({ darkMode }) => {
                             </option>
                         ))}
                     </select>
-                    {selectedTableName && (
+                    {selectedTableName && !isGridEditMode && (
                         <button
                             onClick={() => handleDeleteTable(selectedTableName)}
                             className={`px-3 py-2 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
@@ -472,6 +849,39 @@ const CentralDatabase = ({ darkMode }) => {
 
             </div>
             </div>
+
+            {/* START: Excel-like Mass Edit - Save/Cancel Bar */}
+            {isGridEditMode && (
+                <div className="bg-yellow-100 dark:bg-yellow-800 border-l-4 border-yellow-500 p-4 mb-4">
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <p className="text-yellow-700 dark:text-yellow-200 font-medium">
+                                Excel-like Edit Mode Active
+                            </p>
+                            <p className="text-yellow-600 dark:text-yellow-300 text-sm">
+                                Excel-like Multi-Cell Selection • Click+Drag or Shift+Click for ranges • Type to fill selection • Ctrl+V to paste • Delete/Backspace to clear • Arrow keys navigate
+                            </p>
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={saveGridChanges}
+                                className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+                            >
+                                <FontAwesomeIcon icon={faSave} className="mr-2"/>
+                                Save All
+                            </button>
+                            <button
+                                onClick={cancelGridChanges}
+                                className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+                            >
+                                <FontAwesomeIcon icon={faTimes} className="mr-2"/>
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* END: Excel-like Mass Edit - Save/Cancel Bar */}
 
             <div className="container w-full">
                 <table {...getTableProps()} className="table-auto overflow-scroll w-full bg-white dark:bg-gray-800">
@@ -493,11 +903,16 @@ const CentralDatabase = ({ darkMode }) => {
                                         </span>
                                     </th>
                                 ))}
+                                {!isGridEditMode && (
+                                    <th className="px-6 py-3 border-b border-gray-200 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
+                                        Actions
+                                    </th>
+                                )}
                             </tr>
                         ))}
                     </thead>
                     <tbody {...getTableBodyProps()} className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-                        {rows.map(row => {
+                        {rows.map((row, rowIndex) => {
                             prepareRow(row);
                             return (
                                 <tr
@@ -509,7 +924,36 @@ const CentralDatabase = ({ darkMode }) => {
                                             {...cell.getCellProps()}
                                             className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100"
                                         >
-                                            {editAssetId === row.original.id ? (
+                                            {/* START: Excel-like Mass Edit - Grid Cell Rendering */}
+                                            {isGridEditMode ? (
+                                                <input
+                                                    ref={(el) => {
+                                                        const key = `${rowIndex}-${cell.column.id}`;
+                                                        inputRefs.current[key] = el;
+                                                    }}
+                                                    type="text"
+                                                    value={gridData[rowIndex]?.[cell.column.id] || ''}
+                                                    onChange={(e) => handleInput(e, rowIndex, cell.column.id)}
+                                                    onClick={(e) => handleCellClick(rowIndex, cell.column.id, e)}
+                                                    onMouseDown={(e) => handleMouseDown(rowIndex, cell.column.id, e)}
+                                                    onMouseEnter={() => handleMouseEnter(rowIndex, cell.column.id)}
+                                                    onMouseUp={handleMouseUp}
+                                                    onKeyDown={(e) => handleKeyDown(e, rowIndex, cell.column.id)}
+                                                    onPaste={(e) => handlePaste(e, rowIndex, cell.column.id)}
+                                                    className={`w-full px-2 py-1 border rounded focus:outline-none ${
+                                                        isCellInRange(rowIndex, cell.column.id)
+                                                            ? 'bg-blue-100 border-blue-500 ring-1 ring-blue-300'
+                                                            : selectedCell.rowIndex === rowIndex && selectedCell.columnId === cell.column.id
+                                                                ? 'ring-2 ring-blue-500 border-blue-500'
+                                                                : darkMode 
+                                                                    ? 'bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700' 
+                                                                    : 'border-gray-300 bg-white text-gray-900 hover:bg-gray-50'
+                                                    }`}
+                                                    style={{
+                                                        userSelect: isDragging ? 'none' : 'auto'
+                                                    }}
+                                                />
+                                            ) : editAssetId === row.original.id ? (
                                                 <input
                                                     type="text"
                                                     name={cell.column.id}
@@ -520,42 +964,45 @@ const CentralDatabase = ({ darkMode }) => {
                                             ) : (
                                                 cell.render('Cell')
                                             )}
+                                            {/* END: Excel-like Mass Edit - Grid Cell Rendering */}
                                         </td>
                                     ))}
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                        {editAssetId === row.original.id ? (
-                                            <>
-                                                <button
-                                                    onClick={handleSaveClick}
-                                                    className={`px-3 py-1 rounded-md ${darkMode ? 'bg-green-600 text-gray-100 hover:bg-green-700' : 'bg-green-500 text-white hover:bg-green-600'}`}
-                                                >
-                                                    <FontAwesomeIcon icon={faSave} />
-                                                </button>
-                                                <button
-                                                    onClick={handleCancelEdit}
-                                                    className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
-                                                >
-                                                    <FontAwesomeIcon icon={faTimes} />
-                                                </button>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <button
-                                                    onClick={() => handleEditClick(row.original)}
-                                                    className={`px-3 py-1 rounded-md ${darkMode ? 'bg-blue-600 text-gray-100 hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
-                                                >
-                                                    <FontAwesomeIcon icon={faEdit} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(row.original.id)}
-                                                    className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
-                                                >
-                                                    <FontAwesomeIcon icon={faTrashAlt} />
-                                                </button>
-                                                
-                                            </>
-                                        )}
-                                    </td>
+                                    {!isGridEditMode && (
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                                            {editAssetId === row.original.id ? (
+                                                <>
+                                                    <button
+                                                        onClick={handleSaveClick}
+                                                        className={`px-3 py-1 rounded-md ${darkMode ? 'bg-green-600 text-gray-100 hover:bg-green-700' : 'bg-green-500 text-white hover:bg-green-600'}`}
+                                                    >
+                                                        <FontAwesomeIcon icon={faSave} />
+                                                    </button>
+                                                    <button
+                                                        onClick={handleCancelEdit}
+                                                        className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
+                                                    >
+                                                        <FontAwesomeIcon icon={faTimes} />
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <button
+                                                        onClick={() => handleEditClick(row.original)}
+                                                        className={`px-3 py-1 rounded-md ${darkMode ? 'bg-blue-600 text-gray-100 hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                                                    >
+                                                        <FontAwesomeIcon icon={faEdit} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(row.original.id)}
+                                                        className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
+                                                    >
+                                                        <FontAwesomeIcon icon={faTrashAlt} />
+                                                    </button>
+                                                    
+                                                </>
+                                            )}
+                                        </td>
+                                    )}
                                 </tr>
                             );
                         })}
