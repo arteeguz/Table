@@ -128,8 +128,8 @@ const CentralDatabase = ({ darkMode }) => {
                 }));
             }
         } catch (error) {
-            console.error('Failed to fetch user info', error);
-            setUserInfo(prevUserInfo => ({
+            console.error('Failed to fetch user info:', error);
+            setUserInfo((prevUserInfo) => ({
                 ...prevUserInfo,
                 [employeeId]: 'No User Found'
             }));
@@ -160,7 +160,7 @@ const CentralDatabase = ({ darkMode }) => {
 
         const interval = setInterval(() => {handleFetchAllUserInfo();}, 2 * 60 * 1000);
         return () => clearInterval(interval);
-    }, [])
+    },[])
   };
 
     const updateAssetDetails = async (employeeId, userInfoOutput) => {
@@ -329,7 +329,7 @@ const CentralDatabase = ({ darkMode }) => {
                 { Header: 'Business Group', accessor: 'business_group' },
                 { Header: 'Login ID', accessor: 'login_id' },
                 { Header: 'First Name', accessor: 'first_name' },
-                { Header: 'Preferred Name', accessor: 'prefferred_name' },
+                { Header: 'Preferred Name', accessor: 'preffered_name' },
                 { Header: 'Last Name', accessor: 'last_name' },
                 { Header: 'RBC Email', accessor: 'rbc_email' },
                 { Header: 'Home Drive', accessor: 'home_drive' },
@@ -406,7 +406,7 @@ const CentralDatabase = ({ darkMode }) => {
             <h1 className="mt-20 text-3xl font-bold mb-4 text-center text-gray-900 dark:text-gray-100">Central Database</h1>
             
             <div className={`bg-white shadow-lg rounded-lg dark:bg-gray-800 mb-8 p-4 w-full`}>
-                <h2 className="text-xl font-semibold mb-4 text-gray-700 darkitext-gray-300 text-center">Actions</h2>
+                <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300 text-center">Actions</h2>
                 <div className="flex justify-center">
                     <button
                         onClick={handleFetchAllUserInfo}
@@ -423,7 +423,7 @@ const CentralDatabase = ({ darkMode }) => {
                     </button>
                     <button
                         onClick={handleButtonClick}
-                        className={`ml-4 px-4 py-2 rounded-md ${darkMode ? 'bg-yellow-600 text-gray-100 hover:bg-yellow-500' : 'bg-yellow-500 text-white hover:bg-yellow-600'}`}
+                        className={`ml-4 px-4 py-2 rounded-md ${darkMode ? 'bg-yellow-900 text-gray-100 hover:bg-yellow-500' : 'bg-yellow-900 text-white hover:bg-yellow-600'}`}
                     >
                         <FontAwesomeIcon icon={faUpload} className="mr-2"/>
                     </button>
