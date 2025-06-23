@@ -103,12 +103,12 @@ const CentralDatabase = ({ darkMode }) => {
 
     const handleFetchUserInfo = async (employeeId) => {
         try {
-            const response = await fetch(`http://se160590.fg.rbc.com:5000/api/run-powershell`, {
+            const response = await fetch('http://se160590.fg.rbc.com:5000/api/run-powershell', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
+                body: JSON.stringify({ 
                     script: `Get-ADUser -Filter {EmployeeID -eq '${employeeId}'} -Server "oak.fg.rbc.com" -Properties * | Select DisplayName,HomeDirectory,Surname,GivenName,SamAccountName,Mail,EmployeeID`
                 }),
             });
@@ -116,13 +116,13 @@ const CentralDatabase = ({ darkMode }) => {
             const data = await response.json();
 
             if (response.ok && data.output) {
-                setUserInfo(prevUserInfo => ({
+                setUserInfo((prevUserInfo) => ({
                     ...prevUserInfo,
                     [employeeId]: formatUserInfo(data.output)
                 }));
                 updateAssetDetails(employeeId, data.output);
             } else {
-                setUserInfo(prevUserInfo => ({
+                setUserInfo((prevUserInfo) => ({
                     ...prevUserInfo,
                     [employeeId]: 'No User Found'
                 }));
@@ -145,7 +145,7 @@ const CentralDatabase = ({ darkMode }) => {
             if (asset.employee_id) {
                 await handleFetchUserInfo(asset.employee_id);
             } else {
-                setUserInfo(prevUserInfo => ({
+                setUserInfo((prevUserInfo) => ({
                     ...prevUserInfo,
                     [asset.id]: 'No User Found'
                 }));
@@ -156,25 +156,25 @@ const CentralDatabase = ({ darkMode }) => {
         setLoadingAllUsers(false);
   
     useEffect(() => {
-        handleFetchAllUserInfo();
+        handleFetchAllUserInfo()
 
-        const interval = setInterval(() => {handleFetchAllUserInfo()}, 2 * 60 * 1000);
+        const interval = setInterval(() => {handleFetchAllUserInfo();}, 2 * 60 * 1000);
         return () => clearInterval(interval);
     }, [])
   };
 
     const updateAssetDetails = async (employeeId, userInfoOutput) => {
-        const loginIdMatch = userInfoOutput.match(/SamAccountName\s*:\s*(\S+)/);
-        const emailIdMatch = userInfoOutput.match(/Mail\s*:\s*(\S+)/);
-        const driveIdMatch = userInfoOutput.match(/HomeDirectory\s*:\s*(\S+)/);
-        const firstIdMatch = userInfoOutput.match(/GivenName\s*:\s*(\S+)/);
-        const lastIdMatch = userInfoOutput.match(/Surname\s*:\s*(\S+)/);
+        const loginIDMatch = userInfoOutput.match(/SamAccountName\s*:\s*(\S+)/);
+        const emailIDMatch = userInfoOutput.match(/Mail\s*:\s*(\S+)/);
+        const driveIDMatch = userInfoOutput.match(/HomeDirectory\s*:\s*(\S+)/);
+        const firstIDMatch = userInfoOutput.match(/GivenName\s*:\s*(\S+)/);
+        const lastIDMatch = userInfoOutput.match(/Surname\s*:\s*(\S+)/);
 
-        const loginID = loginIdMatch ? loginIdMatch[1] : '';
-        const emailID = emailIdMatch ? emailIdMatch[1] : '';
-        const driveID = driveIdMatch ? driveIdMatch[1] : '';
-        const firstID = firstIdMatch ? firstIdMatch[1] : '';
-        const lastID = lastIdMatch ? lastIdMatch[1] : '';
+        const loginID = loginIDMatch ? loginIDMatch[1] : '';
+        const emailID = emailIDMatch ? emailIDMatch[1] : '';
+        const driveID = driveIDMatch ? driveIDMatch[1] : '';
+        const firstID = firstIDMatch ? firstIDMatch[1] : '';
+        const lastID = lastIDMatch ? lastIDMatch[1] : '';
 
         const assetToUpdate = assets.find(asset => asset.employee_id === employeeId);
         if (assetToUpdate) {
@@ -184,7 +184,7 @@ const CentralDatabase = ({ darkMode }) => {
                     ...assetToUpdate,
                     login_id: loginID,
                     first_name: firstID,
-                    last_name: lastID,
+                    last_name: lastID, 
                     rbc_email: emailID,
                     home_drive: driveID
                 };
@@ -204,7 +204,7 @@ const CentralDatabase = ({ darkMode }) => {
                 const updatedAsset = await response.json();
                 setAssets(assets.map((asset) => (asset.id === assetToUpdate.id ? updatedAsset : asset)));
             } catch (error) {
-                console.error('Failed to update asset with multiple fields', error);
+                console.error('Failed to update asset with multiple fields:', error);
             }
         }
     };
@@ -212,7 +212,7 @@ const CentralDatabase = ({ darkMode }) => {
     const formatUserInfo = (output) => {
         // Format the output to a more readable format
         return output
-            .replace(/\\r\\n/g, '\n') // Normalize newlines
+            .replace(/\r\n/g, '\n') // Normalize newlines
             .split('\n') // Split into lines
             .map(line => line.trim()) // Trim each line
             .filter(line => line.length > 0) // Remove empty lines
@@ -242,7 +242,7 @@ const CentralDatabase = ({ darkMode }) => {
             }
             setAssets(assets.filter((asset) => asset.id !== assetId));
         } catch (error) {
-            console.error('Failed to delete asset', error);
+            console.error('Failed to delete asset:', error);
         }
     };
 
@@ -329,7 +329,7 @@ const CentralDatabase = ({ darkMode }) => {
                 { Header: 'Business Group', accessor: 'business_group' },
                 { Header: 'Login ID', accessor: 'login_id' },
                 { Header: 'First Name', accessor: 'first_name' },
-                { Header: 'Preferred Name', accessor: 'preferred_name' },
+                { Header: 'Preferred Name', accessor: 'prefferred_name' },
                 { Header: 'Last Name', accessor: 'last_name' },
                 { Header: 'RBC Email', accessor: 'rbc_email' },
                 { Header: 'Home Drive', accessor: 'home_drive' },
@@ -340,7 +340,7 @@ const CentralDatabase = ({ darkMode }) => {
                 { Header: 'Location', accessor: 'location' },
                 { Header: 'Phone Number', accessor: 'phone_number' },
                 { Header: 'Phone Serial', accessor: 'phone_serial' },
-                { Header: 'IMEI', accessor: 'phone_imei' },
+                { Header: 'IME1', accessor: 'phone_ime1' },
                 { Header: 'Phone Platform', accessor: 'phone_platform' },
                 { Header: 'Onboarding Date', accessor: 'onboarding_date' },
                 { Header: 'Assigned Tech', accessor: 'technician' }
@@ -376,7 +376,7 @@ const CentralDatabase = ({ darkMode }) => {
                 { Header: 'Last Name', accessor: 'last_name' },
                 { Header: 'Phone Number', accessor: 'phone_number' },
                 { Header: 'Phone Serial', accessor: 'phone_serial' },
-                { Header: 'IMEI', accessor: 'phone_imei' },
+                { Header: 'IME1', accessor: 'phone_ime1' },
                 { Header: 'Phone Platform', accessor: 'phone_platform' },
                 { Header: 'Employee ID', accessor: 'employee_id' },
                 { Header: 'Business Group', accessor: 'business_group' },
@@ -402,15 +402,15 @@ const CentralDatabase = ({ darkMode }) => {
     );
 
     return (
-        <div className={`mx-auto p-4 ${darkMode ? 'dark' : ''}`}>
-            <h1 className="mr-20 text-3xl font-bold mb-4 text-center text-gray-900 darkitext-gray-100">Central Database</h1>
+        <div className={` mx-auto p-4 ${darkMode ? 'dark' : ''}`}>
+            <h1 className="mt-20 text-3xl font-bold mb-4 text-center text-gray-900 dark:text-gray-100">Central Database</h1>
             
-            <div className="bg-white shadow-lg rounded-lg dark:bg-gray-800 mb-8 p-4 w-full">
+            <div className={`bg-white shadow-lg rounded-lg dark:bg-gray-800 mb-8 p-4 w-full`}>
                 <h2 className="text-xl font-semibold mb-4 text-gray-700 darkitext-gray-300 text-center">Actions</h2>
                 <div className="flex justify-center">
                     <button
-                        onClick={handleButtonClick}
-                        className={`mr-5 px-4 py-2 rounded-md ${darkMode ? 'bg-green-500 text-gray-100 hover:bg-blue-700' : 'bg-green-500 text-white hover:bg-blue-600'}`}
+                        onClick={handleFetchAllUserInfo}
+                        className={` mr-5 px-4 py-2 rounded-md ${darkMode ? 'bg-green-500 text-gray-100 hover:bg-blue-700' : 'bg-green-500 text-white hover:bg-blue-600'}`}
                     >
                         <FontAwesomeIcon icon={faSync} className="mr-2" />
                         {loadingAllUsers ? 'Fetching...' : 'Fetch User Data'}
@@ -447,7 +447,7 @@ const CentralDatabase = ({ darkMode }) => {
                     </select>
                 </div>
                 <div className="ml-10 text-center flex items-center gap-2">
-                    <select
+                    <select 
                         value={selectedTableName}
                         onChange={handleSelectChange}
                         className={`px-4 py-2 rounded-md ${darkMode ? 'bg-gray-800 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-900'}`}
@@ -474,7 +474,7 @@ const CentralDatabase = ({ darkMode }) => {
             </div>
 
             <div className="container w-full">
-                <table {...getTableProps()} className="table-auto overflow-scroll w-full bg-white darkxbg-gray-800">
+                <table {...getTableProps()} className="table-auto overflow-scroll w-full bg-white dark:bg-gray-800">
                     <thead>
                         {headerGroups.map(headerGroup => (
                             <tr {...headerGroup.getHeaderGroupProps()}>
@@ -527,15 +527,15 @@ const CentralDatabase = ({ darkMode }) => {
                                             <>
                                                 <button
                                                     onClick={handleSaveClick}
-                                                    className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
+                                                    className={`px-3 py-1 rounded-md ${darkMode ? 'bg-green-600 text-gray-100 hover:bg-green-700' : 'bg-green-500 text-white hover:bg-green-600'}`}
                                                 >
                                                     <FontAwesomeIcon icon={faSave} />
                                                 </button>
                                                 <button
                                                     onClick={handleCancelEdit}
-                                                    className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-gray-600 text-gray-100 hover:bg-gray-700' : 'bg-gray-500 text-white hover:bg-gray-600'}`}
+                                                    className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
                                                 >
-                                                    <FontAwesomeIcon icon={faEdit} />
+                                                    <FontAwesomeIcon icon={faTimes} />
                                                 </button>
                                             </>
                                         ) : (
@@ -594,5 +594,3 @@ const CentralDatabase = ({ darkMode }) => {
 };
 
 export default CentralDatabase;
-
-
