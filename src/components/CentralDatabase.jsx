@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSave, faTimes, faEdit, faUser, faTrashAlt, faFileExcel, faSync, faUpload } from '@fortawesome/free-solid-svg-icons';
-import { useTable, useFilters, useSortBy } from 'react-table'
+import { useTable, useFilters, useSortBy } from 'react-table';
 import { useTableContext } from './TableContext';
 import * as XLSX from 'xlsx';
 import axios from 'axios';
@@ -28,18 +28,18 @@ const CentralDatabase = ({ darkMode }) => {
     const handleSelectChange = (e) => {
         setSelectedTableName(e.target.value);
         console.log('Selected Table:', e.target.value);
-    };
+    }
 
     useEffect(() => {
         const fetchTableNames = async () => {
             try {
                 const response = await fetch('http://se160590.fg.rbc.com:5000/api/table-names');
-                if (!response.ok) {
+                if (!response.ok){
                     throw new Error('Failed to fetch table names');
                 }
                 const data = await response.json();
                 setTableNames(data);
-                } catch (error) {
+                }catch (error) {
                 console.error('Failed to fetch table names', error);
             }
         };
@@ -50,7 +50,7 @@ const CentralDatabase = ({ darkMode }) => {
     
     const fetchAssets = async () => {
         try {
-            const url = selectedTableName ? `http://se160590.fg.rbc.com:5000/api/asset-by-tableName?table_name=${selectedTableName}` : 'http://se160590.fg.rbc.com:5000/api/assets';
+            const url = selectedTableName ? `http://se160590.fg.rbc.com:5000/api/asset-by-table?table_name=${selectedTableName}` : 'http://se160590.fg.rbc.com:5000/api/assets';
             const response = await fetch(url);
             if (!response.ok) {
                 throw new Error('Failed to fetch assets');
