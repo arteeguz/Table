@@ -58,7 +58,7 @@ const CentralDatabase = ({ darkMode }) => {
             const data = await response.json();
             setAssets(data);
         } catch (error) {
-            console.error('Failed to fetch assets', error);
+            console.error('Failed to fetch assets:', error);
         }
     };
 
@@ -95,7 +95,7 @@ const CentralDatabase = ({ darkMode }) => {
             setEditAssetId(null);
             setEditValues({});
         } catch (error) {
-            console.error('Failed to save asset', error);
+            console.error('Failed to save asset:', error);
         }
     };
 
