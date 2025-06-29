@@ -938,7 +938,7 @@ const CentralDatabase = ({ darkMode }) => {
                                     {row.cells.map(cell => (
                                         <td
                                             {...cell.getCellProps()}
-                                            className="px-6 py-4 border border-gray-300 dark:border-gray-600 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100"
+                                            className={`px-6 py-4 border border-gray-300 dark:border-gray-600 ${isGridEditMode ? 'whitespace-normal' : 'whitespace-nowrap'} text-sm font-medium text-gray-900 dark:text-gray-100`}
                                         >
                                             {/* Excel-like Grid Cell - EXACT SAME TD STYLING AS REGULAR VIEW */}
                                             {isGridEditMode ? (
@@ -956,7 +956,7 @@ const CentralDatabase = ({ darkMode }) => {
                                                     onMouseUp={handleMouseUp}
                                                     onKeyDown={(e) => handleKeyDown(e, rowIndex, cell.column.id)}
                                                     onPaste={(e) => handlePaste(e, rowIndex, cell.column.id)}
-                                                    className={`block w-full px-3 py-2 border-2 border-dashed border-red-500 rounded-md shadow-sm focus:outline-none sm:text-sm ${
+                                                    className={`block w-full min-w-32 px-3 py-2 border-2 border-dashed border-red-500 rounded-md shadow-sm focus:outline-none sm:text-sm ${
                                                         isCellInRange(rowIndex, cell.column.id)
                                                             ? 'border-blue-500 bg-blue-100 dark:bg-blue-900 dark:border-blue-400'
                                                             : selectedCell.rowIndex === rowIndex && selectedCell.columnId === cell.column.id
