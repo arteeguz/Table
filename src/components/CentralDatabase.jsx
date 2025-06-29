@@ -940,7 +940,7 @@ const CentralDatabase = ({ darkMode }) => {
                                             {...cell.getCellProps()}
                                             className="px-6 py-4 border border-gray-300 dark:border-gray-600 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100"
                                         >
-                                            {/* NEW FEATURE: Excel-like Grid Cell Rendering */}
+                                            {/* NEW FEATURE: Excel-like Grid Cell Rendering with CONSISTENT STYLING */}
                                             {isGridEditMode ? (
                                                 <input
                                                     ref={(el) => {
@@ -956,20 +956,17 @@ const CentralDatabase = ({ darkMode }) => {
                                                     onMouseUp={handleMouseUp}
                                                     onKeyDown={(e) => handleKeyDown(e, rowIndex, cell.column.id)}
                                                     onPaste={(e) => handlePaste(e, rowIndex, cell.column.id)}
-                                                    className={`px-2 py-1 border rounded focus:outline-none text-sm font-medium ${
+                                                    className={`px-6 py-4 text-sm font-medium whitespace-nowrap w-full min-w-0 box-border focus:outline-none ${
                                                         isCellInRange(rowIndex, cell.column.id)
-                                                            ? 'bg-blue-100 border-blue-500 ring-1 ring-blue-300'
+                                                            ? 'bg-blue-100 border-2 border-blue-500 ring-1 ring-blue-300 dark:bg-blue-900 dark:border-blue-400'
                                                             : selectedCell.rowIndex === rowIndex && selectedCell.columnId === cell.column.id
-                                                                ? 'ring-2 ring-blue-500 border-blue-500'
+                                                                ? 'ring-2 ring-blue-500 border-2 border-blue-500'
                                                                 : darkMode 
-                                                                    ? 'bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700' 
-                                                                    : 'border-gray-300 bg-white text-gray-900 hover:bg-gray-50'
+                                                                    ? 'bg-gray-800 border border-gray-600 text-gray-300 hover:bg-gray-700' 
+                                                                    : 'border border-gray-300 bg-white text-gray-900 hover:bg-gray-50'
                                                     }`}
                                                     style={{
-                                                        userSelect: isDragging ? 'none' : 'auto',
-                                                        width: '100%',
-                                                        minWidth: '0',
-                                                        boxSizing: 'border-box'
+                                                        userSelect: isDragging ? 'none' : 'auto'
                                                     }}
                                                 />
                                             ) : editAssetId === row.original.id ? (
