@@ -98,7 +98,7 @@ const CentralDatabase = ({ darkMode }) => {
         }
     };
 
-    // NEW FEATURE: Excel-like Mass Edit Functions
+    // NEW FEATURE: Excel-like Mass Edit Functions START
     const toggleGridEditMode = () => {
         if (isGridEditMode) {
             // Exit grid mode
@@ -426,7 +426,7 @@ const CentralDatabase = ({ darkMode }) => {
         }
         return [];
     };
-    // END: Excel-like Mass Edit Functions
+    // NEW FEATURE: Excel-like Mass Edit Functions END
 
     const handleEditClick = (asset) => {
         setEditAssetId(asset.id);
@@ -687,10 +687,8 @@ const CentralDatabase = ({ darkMode }) => {
 
     // NEW FEATURE: Enhanced columns with individual filters
     const columns = React.useMemo(() => {
-        const baseColumns = [];
-        
         if (view === 'default') {
-            baseColumns.push(
+            return [
                 { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter },
                 { Header: 'Business Group', accessor: 'business_group', Filter: DefaultColumnFilter },
                 { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter },
@@ -710,9 +708,9 @@ const CentralDatabase = ({ darkMode }) => {
                 { Header: 'Phone Platform', accessor: 'phone_platform', Filter: DefaultColumnFilter },
                 { Header: 'Onboarding Date', accessor: 'onboarding_date', Filter: DefaultColumnFilter },
                 { Header: 'Assigned Tech', accessor: 'technician', Filter: DefaultColumnFilter }
-            );
+            ];
         } else if (view === 'DSS') {
-            baseColumns.push(
+            return [
                 { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter },
                 { Header: 'Business Group', accessor: 'business_group', Filter: DefaultColumnFilter },
                 { Header: 'Asset Number', accessor: 'asset_number', Filter: DefaultColumnFilter },
@@ -721,10 +719,10 @@ const CentralDatabase = ({ darkMode }) => {
                 { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter },
                 { Header: 'RBC Email', accessor: 'rbc_email', Filter: DefaultColumnFilter },
                 { Header: 'Onboarding Date', accessor: 'onboarding_date', Filter: DefaultColumnFilter },
-                { Header: 'Assigned Tech', accessor: 'technician', Filter: DefaultColumnFilter }
-            );
+                { Header: 'Assigned Tech', accessor: 'technician', Filter: DefaultColumnFilter },
+            ];
         } else if (view === 'HR') {
-            baseColumns.push(
+            return [
                 { Header: 'Business Group', accessor: 'business_group', Filter: DefaultColumnFilter },
                 { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter },
                 { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter },
@@ -733,11 +731,11 @@ const CentralDatabase = ({ darkMode }) => {
                 { Header: 'Transit', accessor: 'transit', Filter: DefaultColumnFilter },
                 { Header: 'Location', accessor: 'location', Filter: DefaultColumnFilter },
                 { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter },
-                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter }
-            );
+                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter },
+            ];
         } 
         else if (view === 'Mobility') {
-            baseColumns.push(
+            return [
                 { Header: 'First Name', accessor: 'first_name', Filter: DefaultColumnFilter },
                 { Header: 'Last Name', accessor: 'last_name', Filter: DefaultColumnFilter },
                 { Header: 'Phone Number', accessor: 'phone_number', Filter: DefaultColumnFilter },
@@ -746,12 +744,11 @@ const CentralDatabase = ({ darkMode }) => {
                 { Header: 'Phone Platform', accessor: 'phone_platform', Filter: DefaultColumnFilter },
                 { Header: 'Employee ID', accessor: 'employee_id', Filter: DefaultColumnFilter },
                 { Header: 'Business Group', accessor: 'business_group', Filter: DefaultColumnFilter },
-                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter }
-            );
+                { Header: 'Login ID', accessor: 'login_id', Filter: DefaultColumnFilter },
+            ];
         }
-        
-        return baseColumns;
-    }, [view]);
+        return [];
+    }, [view, filterInput, darkMode]);
 
     const {
         getTableProps,
@@ -775,10 +772,10 @@ const CentralDatabase = ({ darkMode }) => {
             
             <div className={`bg-white shadow-lg rounded-lg dark:bg-gray-800 mb-8 p-4 w-full`}>
                 <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300 text-center">Actions</h2>
-                <div className="flex justify-center flex-wrap gap-2">
+                <div className="flex justify-center">
                     <button
                         onClick={handleFetchAllUserInfo}
-                        className={`px-4 py-2 rounded-md ${darkMode ? 'bg-green-500 text-gray-100 hover:bg-blue-700' : 'bg-green-500 text-white hover:bg-blue-600'}`}
+                        className={` mr-5 px-4 py-2 rounded-md ${darkMode ? 'bg-green-500 text-gray-100 hover:bg-blue-700' : 'bg-green-500 text-white hover:bg-blue-600'}`}
                     >
                         <FontAwesomeIcon icon={faSync} className="mr-2" />
                         {loadingAllUsers ? 'Fetching...' : 'Fetch User Data'}
@@ -791,16 +788,15 @@ const CentralDatabase = ({ darkMode }) => {
                     </button>
                     <button
                         onClick={handleButtonClick}
-                        className={`px-4 py-2 rounded-md ${darkMode ? 'bg-yellow-600 text-gray-100 hover:bg-yellow-500' : 'bg-yellow-500 text-white hover:bg-yellow-600'}`}
+                        className={`ml-4 px-4 py-2 rounded-md ${darkMode ? 'bg-yellow-900 text-gray-100 hover:bg-yellow-500' : 'bg-yellow-900 text-white hover:bg-yellow-600'}`}
                     >
                         <FontAwesomeIcon icon={faUpload} className="mr-2"/>
-                        Upload
                     </button>
                     {/* NEW FEATURE: Excel-like Mass Edit Toggle Button */}
                     <button
                         onClick={toggleGridEditMode}
                         disabled={assets.length === 0}
-                        className={`px-4 py-2 rounded-md ${
+                        className={`ml-4 px-4 py-2 rounded-md ${
                             assets.length === 0 
                                 ? 'bg-gray-400 text-gray-600 cursor-not-allowed' 
                                 : isGridEditMode
@@ -822,7 +818,7 @@ const CentralDatabase = ({ darkMode }) => {
                         onChange={handleFileChange}
                         style={{ display: 'none' }}
                     />
-                <div className="text-center">
+                <div className="ml-10 text-center">
                     <select
                         value={view}
                         onChange={(e) => setView(e.target.value)}
@@ -835,7 +831,7 @@ const CentralDatabase = ({ darkMode }) => {
                         <option value="Mobility">Mobility View</option>
                     </select>
                 </div>
-                <div className="text-center flex items-center gap-2">
+                <div className="ml-10 text-center flex items-center gap-2">
                     <select 
                         value={selectedTableName}
                         onChange={handleSelectChange}
@@ -895,149 +891,135 @@ const CentralDatabase = ({ darkMode }) => {
                 </div>
             )}
 
-            {/* NEW FEATURE: Excel/SharePoint style table with auto-width columns and horizontal scroll */}
-            <div className="w-full overflow-auto shadow-lg rounded-lg">
-                <div className="inline-block min-w-full align-middle">
-                    <table {...getTableProps()} className="min-w-full border-collapse">
-                        <thead className="sticky top-0 z-10">
-                            {headerGroups.map(headerGroup => (
-                                <React.Fragment key={headerGroup.id}>
-                                    <tr {...headerGroup.getHeaderGroupProps()}>
-                                        {headerGroup.headers.map(column => (
-                                            <th
-                                                {...column.getHeaderProps()}
-                                                className="px-4 py-3 border border-gray-300 bg-gray-100 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 uppercase tracking-wider dark:text-gray-300"
-                                            >
-                                                <div {...column.getSortByToggleProps()} className="flex items-center justify-between cursor-pointer mb-2">
-                                                    <span>{column.render('Header')}</span>
-                                                    <span className="ml-2">
-                                                        {column.isSorted
-                                                            ? column.isSortedDesc
-                                                                ? <FontAwesomeIcon icon={faSortDown} className="text-blue-500" />
-                                                                : <FontAwesomeIcon icon={faSortUp} className="text-blue-500" />
-                                                            : <FontAwesomeIcon icon={faSort} className="text-gray-400" />}
-                                                    </span>
-                                                </div>
-                                                {column.canFilter ? column.render('Filter') : null}
-                                            </th>
-                                        ))}
-                                        {!isGridEditMode && (
-                                            <th className="px-4 py-3 border border-gray-300 bg-gray-100 dark:bg-gray-700 text-left text-xs font-medium text-gray-700 uppercase tracking-wider dark:text-gray-300">
-                                                Actions
-                                            </th>
-                                        )}
-                                    </tr>
-                                </React.Fragment>
-                            ))}
-                        </thead>
-                        <tbody {...getTableBodyProps()} className="bg-white dark:bg-gray-800">
-                            {rows.map((row, rowIndex) => {
-                                prepareRow(row);
-                                return (
-                                    <tr
-                                        {...row.getRowProps()}
-                                        className={`${
-                                            rowIndex % 2 === 0 
-                                                ? 'bg-white dark:bg-gray-800' 
-                                                : 'bg-gray-50 dark:bg-gray-750'
-                                        } hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-150`}
+            {/* ORIGINAL: Keep original table container structure with horizontal scroll */}
+            <div className="container w-full">
+                <table {...getTableProps()} className="table-auto overflow-scroll w-full bg-white dark:bg-gray-800">
+                    <thead>
+                        {headerGroups.map(headerGroup => (
+                            <tr {...headerGroup.getHeaderGroupProps()}>
+                                {headerGroup.headers.map(column => (
+                                    <th
+                                        {...column.getHeaderProps(column.getSortByToggleProps())}
+                                        className="px-6 py-3 border-b border-gray-200 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400"
                                     >
-                                        {row.cells.map(cell => (
-                                            <td
-                                                {...cell.getCellProps()}
-                                                className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-gray-100"
-                                            >
-                                                {/* NEW FEATURE: Excel-like Grid Cell Rendering */}
-                                                {isGridEditMode ? (
-                                                    <input
-                                                        ref={(el) => {
-                                                            const key = `${rowIndex}-${cell.column.id}`;
-                                                            inputRefs.current[key] = el;
-                                                        }}
-                                                        type="text"
-                                                        value={gridData[rowIndex]?.[cell.column.id] || ''}
-                                                        onChange={(e) => handleInput(e, rowIndex, cell.column.id)}
-                                                        onClick={(e) => handleCellClick(rowIndex, cell.column.id, e)}
-                                                        onMouseDown={(e) => handleMouseDown(rowIndex, cell.column.id, e)}
-                                                        onMouseEnter={() => handleMouseEnter(rowIndex, cell.column.id)}
-                                                        onMouseUp={handleMouseUp}
-                                                        onKeyDown={(e) => handleKeyDown(e, rowIndex, cell.column.id)}
-                                                        onPaste={(e) => handlePaste(e, rowIndex, cell.column.id)}
-                                                        className={`w-full px-2 py-1 border rounded focus:outline-none ${
-                                                            isCellInRange(rowIndex, cell.column.id)
-                                                                ? 'bg-blue-100 border-blue-500 ring-1 ring-blue-300'
-                                                                : selectedCell.rowIndex === rowIndex && selectedCell.columnId === cell.column.id
-                                                                    ? 'ring-2 ring-blue-500 border-blue-500'
-                                                                    : darkMode 
-                                                                        ? 'bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700' 
-                                                                        : 'border-gray-300 bg-white text-gray-900 hover:bg-gray-50'
-                                                        }`}
-                                                        style={{
-                                                            userSelect: isDragging ? 'none' : 'auto'
-                                                        }}
-                                                    />
-                                                ) : editAssetId === row.original.id ? (
-                                                    <input
-                                                        type="text"
-                                                        name={cell.column.id}
-                                                        value={editValues[cell.column.id] || ''}
-                                                        onChange={handleChange}
-                                                        className={`w-full px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'border-gray-300 bg-white text-gray-900'}`}
-                                                    />
-                                                ) : (
-                                                    <div className="truncate" title={cell.value}>
-                                                        {cell.render('Cell')}
-                                                    </div>
-                                                )}
-                                            </td>
-                                        ))}
-                                        {!isGridEditMode && (
-                                            <td className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-sm">
-                                                <div className="flex space-x-2">
-                                                    {editAssetId === row.original.id ? (
-                                                        <>
-                                                            <button
-                                                                onClick={handleSaveClick}
-                                                                className={`px-2 py-1 rounded ${darkMode ? 'bg-green-600 text-gray-100 hover:bg-green-700' : 'bg-green-500 text-white hover:bg-green-600'}`}
-                                                                title="Save"
-                                                            >
-                                                                <FontAwesomeIcon icon={faSave} />
-                                                            </button>
-                                                            <button
-                                                                onClick={handleCancelEdit}
-                                                                className={`px-2 py-1 rounded ${darkMode ? 'bg-gray-600 text-gray-100 hover:bg-gray-700' : 'bg-gray-500 text-white hover:bg-gray-600'}`}
-                                                                title="Cancel"
-                                                            >
-                                                                <FontAwesomeIcon icon={faTimes} />
-                                                            </button>
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <button
-                                                                onClick={() => handleEditClick(row.original)}
-                                                                className={`px-2 py-1 rounded ${darkMode ? 'bg-blue-600 text-gray-100 hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
-                                                                title="Edit"
-                                                            >
-                                                                <FontAwesomeIcon icon={faEdit} />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleDelete(row.original.id)}
-                                                                className={`px-2 py-1 rounded ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
-                                                                title="Delete"
-                                                            >
-                                                                <FontAwesomeIcon icon={faTrashAlt} />
-                                                            </button>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        )}
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
+                                        {/* NEW FEATURE: Enhanced header with sorting and filters */}
+                                        <div className="flex items-center justify-between cursor-pointer mb-2">
+                                            <span>{column.render('Header')}</span>
+                                            <span className="ml-2">
+                                                {column.isSorted
+                                                    ? column.isSortedDesc
+                                                        ? <FontAwesomeIcon icon={faSortDown} className="text-blue-500" />
+                                                        : <FontAwesomeIcon icon={faSortUp} className="text-blue-500" />
+                                                    : <FontAwesomeIcon icon={faSort} className="text-gray-400" />}
+                                            </span>
+                                        </div>
+                                        {column.canFilter ? column.render('Filter') : null}
+                                    </th>
+                                ))}
+                                {!isGridEditMode && (
+                                    <th className="px-6 py-3 border-b border-gray-200 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
+                                        Actions
+                                    </th>
+                                )}
+                            </tr>
+                        ))}
+                    </thead>
+                    <tbody {...getTableBodyProps()} className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                        {rows.map((row, rowIndex) => {
+                            prepareRow(row);
+                            return (
+                                <tr
+                                    {...row.getRowProps()}
+                                    className={`hover:bg-gray-100 dark:hover:bg-gray-700 ${editAssetId === row.original.id ? 'bg-gray-200 dark:bg-gray-600' : ''}`}
+                                >
+                                    {row.cells.map(cell => (
+                                        <td
+                                            {...cell.getCellProps()}
+                                            className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100"
+                                        >
+                                            {/* NEW FEATURE: Excel-like Grid Cell Rendering */}
+                                            {isGridEditMode ? (
+                                                <input
+                                                    ref={(el) => {
+                                                        const key = `${rowIndex}-${cell.column.id}`;
+                                                        inputRefs.current[key] = el;
+                                                    }}
+                                                    type="text"
+                                                    value={gridData[rowIndex]?.[cell.column.id] || ''}
+                                                    onChange={(e) => handleInput(e, rowIndex, cell.column.id)}
+                                                    onClick={(e) => handleCellClick(rowIndex, cell.column.id, e)}
+                                                    onMouseDown={(e) => handleMouseDown(rowIndex, cell.column.id, e)}
+                                                    onMouseEnter={() => handleMouseEnter(rowIndex, cell.column.id)}
+                                                    onMouseUp={handleMouseUp}
+                                                    onKeyDown={(e) => handleKeyDown(e, rowIndex, cell.column.id)}
+                                                    onPaste={(e) => handlePaste(e, rowIndex, cell.column.id)}
+                                                    className={`w-full px-2 py-1 border rounded focus:outline-none ${
+                                                        isCellInRange(rowIndex, cell.column.id)
+                                                            ? 'bg-blue-100 border-blue-500 ring-1 ring-blue-300'
+                                                            : selectedCell.rowIndex === rowIndex && selectedCell.columnId === cell.column.id
+                                                                ? 'ring-2 ring-blue-500 border-blue-500'
+                                                                : darkMode 
+                                                                    ? 'bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700' 
+                                                                    : 'border-gray-300 bg-white text-gray-900 hover:bg-gray-50'
+                                                    }`}
+                                                    style={{
+                                                        userSelect: isDragging ? 'none' : 'auto'
+                                                    }}
+                                                />
+                                            ) : editAssetId === row.original.id ? (
+                                                <input
+                                                    type="text"
+                                                    name={cell.column.id}
+                                                    value={editValues[cell.column.id] || ''}
+                                                    onChange={handleChange}
+                                                    className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none sm:text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-gray-300' : 'border-gray-300 bg-white text-gray-900'}`}
+                                                />
+                                            ) : (
+                                                cell.render('Cell')
+                                            )}
+                                        </td>
+                                    ))}
+                                    {!isGridEditMode && (
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                                            {editAssetId === row.original.id ? (
+                                                <>
+                                                    <button
+                                                        onClick={handleSaveClick}
+                                                        className={`px-3 py-1 rounded-md ${darkMode ? 'bg-green-600 text-gray-100 hover:bg-green-700' : 'bg-green-500 text-white hover:bg-green-600'}`}
+                                                    >
+                                                        <FontAwesomeIcon icon={faSave} />
+                                                    </button>
+                                                    <button
+                                                        onClick={handleCancelEdit}
+                                                        className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
+                                                    >
+                                                        <FontAwesomeIcon icon={faTimes} />
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <button
+                                                        onClick={() => handleEditClick(row.original)}
+                                                        className={`px-3 py-1 rounded-md ${darkMode ? 'bg-blue-600 text-gray-100 hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                                                    >
+                                                        <FontAwesomeIcon icon={faEdit} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(row.original.id)}
+                                                        className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
+                                                    >
+                                                        <FontAwesomeIcon icon={faTrashAlt} />
+                                                    </button>
+                                                    
+                                                </>
+                                            )}
+                                        </td>
+                                    )}
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
             </div>
 
             {showDeleteConfirm && (
