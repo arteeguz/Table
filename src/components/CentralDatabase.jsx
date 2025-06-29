@@ -768,9 +768,8 @@ const CentralDatabase = ({ darkMode }) => {
 
     return (
         <div className={` mx-auto p-4 ${darkMode ? 'dark' : ''}`}>
-            <h1 className="mt-20 text-3xl font-bold mb-4 text-gray-900 dark:text-gray-100">Central Database</h1>
-            
-            <div className={`bg-white shadow-lg rounded-lg dark:bg-gray-800 mb-8 p-4 w-full`}>
+            <div className={`bg-white shadow-lg rounded-lg dark:bg-gray-800 mb-8 p-6 w-full mt-20`}>
+                <h1 className="text-3xl font-bold mb-6 text-gray-900 dark:text-gray-100">Central Database</h1>
                 <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300">Actions</h2>
                 <div className="flex justify-start items-center gap-4">
                     <button
@@ -855,8 +854,7 @@ const CentralDatabase = ({ darkMode }) => {
                         </button>
                     )}
                 </div>
-
-            </div>
+                </div>
             </div>
 
             {/* NEW FEATURE: Excel-like Mass Edit Save/Cancel Bar */}
@@ -940,7 +938,7 @@ const CentralDatabase = ({ darkMode }) => {
                                     {row.cells.map(cell => (
                                         <td
                                             {...cell.getCellProps()}
-                                            className={`px-6 py-4 border border-gray-300 dark:border-gray-600 ${isGridEditMode ? 'min-w-max' : 'whitespace-nowrap'} text-sm font-medium text-gray-900 dark:text-gray-100`}
+                                            className="px-6 py-4 border border-gray-300 dark:border-gray-600 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100"
                                         >
                                             {/* NEW FEATURE: Excel-like Grid Cell Rendering */}
                                             {isGridEditMode ? (
@@ -958,7 +956,7 @@ const CentralDatabase = ({ darkMode }) => {
                                                     onMouseUp={handleMouseUp}
                                                     onKeyDown={(e) => handleKeyDown(e, rowIndex, cell.column.id)}
                                                     onPaste={(e) => handlePaste(e, rowIndex, cell.column.id)}
-                                                    className={`w-full px-2 py-1 border rounded focus:outline-none ${
+                                                    className={`px-2 py-1 border rounded focus:outline-none text-sm font-medium ${
                                                         isCellInRange(rowIndex, cell.column.id)
                                                             ? 'bg-blue-100 border-blue-500 ring-1 ring-blue-300'
                                                             : selectedCell.rowIndex === rowIndex && selectedCell.columnId === cell.column.id
@@ -968,7 +966,10 @@ const CentralDatabase = ({ darkMode }) => {
                                                                     : 'border-gray-300 bg-white text-gray-900 hover:bg-gray-50'
                                                     }`}
                                                     style={{
-                                                        userSelect: isDragging ? 'none' : 'auto'
+                                                        userSelect: isDragging ? 'none' : 'auto',
+                                                        width: '100%',
+                                                        minWidth: '0',
+                                                        boxSizing: 'border-box'
                                                     }}
                                                 />
                                             ) : editAssetId === row.original.id ? (
