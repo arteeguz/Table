@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useContext, useMemo, useRef } from 'react';
+import React, { useEffect, useState, useContext, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSave, faTimes, faEdit, faUser, faTrashAlt, faFileExcel, faSync, faUpload, faSortUp, faSortDown, faSort, faTableCells, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
+import { faSave, faTimes, faEdit, faUser, faTrashAlt, faFileExcel, faSync, faUpload, faTableCells, faExclamationTriangle, faSort, faSortDown, faSortUp } from '@fortawesome/free-solid-svg-icons';
 import { useTable, useFilters, useSortBy } from 'react-table';
 import { useTableContext } from './TableContext';
 import * as XLSX from 'xlsx';
@@ -13,6 +13,7 @@ const CentralDatabase = ({ darkMode }) => {
     const [editValues, setEditValues] = useState({});
     const [filterInput, setFilterInput] = useState('');
     const [loadingAllUsers, setLoadingAllUsers] = useState(false);
+    const [loadingUserInfo, setLoadingUserInfo] = useState('');
     const [userInfo, setUserInfo] = useState({});
     const [selectedFile, setSelectedFile] = useState(null);
     const [view, setView] = useState('default');
@@ -163,14 +164,7 @@ const CentralDatabase = ({ darkMode }) => {
 
         await Promise.all(userInfoPromises);
         setLoadingAllUsers(false);
-  
-    useEffect(() => {
-        handleFetchAllUserInfo()
-
-        const interval = setInterval(() => {handleFetchAllUserInfo();}, 2 * 60 * 1000);
-        return () => clearInterval(interval);
-    },[])
-  };
+    };
 
     const updateAssetDetails = async (employeeId, userInfoOutput) => {
         const loginIDMatch = userInfoOutput.match(/SamAccountName\s*:\s*(\S+)/);
@@ -353,6 +347,7 @@ const CentralDatabase = ({ darkMode }) => {
     };
 
     const handleMassEditChange = (assetId, columnId, value) => {
+        if (!assetId || !columnId) return; // ADDED: Safety check
         setMassEditValues(prev => ({
             ...prev,
             [assetId]: {
@@ -432,7 +427,7 @@ const CentralDatabase = ({ darkMode }) => {
         switch (e.key) {
             case 'Enter':
                 e.preventDefault();
-                newRowIndex = Math.min(rowIndex + 1, rows.length - 1);
+                newRowIndex = Math.min(rowIndex + 1, (rows?.length || 1) - 1);
                 break;
             case 'Tab':
                 e.preventDefault();
@@ -451,7 +446,7 @@ const CentralDatabase = ({ darkMode }) => {
                 break;
             case 'ArrowDown':
                 e.preventDefault();
-                newRowIndex = Math.min(rowIndex + 1, rows.length - 1);
+                newRowIndex = Math.min(rowIndex + 1, (rows?.length || 1) - 1);
                 break;
             case 'ArrowLeft':
                 e.preventDefault();
@@ -510,10 +505,12 @@ const CentralDatabase = ({ darkMode }) => {
                     const targetRowIdx = startRowIdx + rowOffset;
                     const targetColIdx = colIndex + colOffset;
                     
-                    if (targetRowIdx < rows.length && targetColIdx < columns.length) {
-                        const asset = rows[targetRowIdx].original;
-                        const columnId = columns[targetColIdx].accessor;
-                        handleMassEditChange(asset.id, columnId, value);
+                    if (targetRowIdx < (rows?.length || 0) && targetColIdx < (columns?.length || 0)) {
+                        const asset = rows[targetRowIdx]?.original;
+                        const columnId = columns[targetColIdx]?.accessor;
+                        if (asset && columnId) {
+                            handleMassEditChange(asset.id, columnId, value);
+                        }
                     }
                 });
             });
@@ -630,7 +627,7 @@ const CentralDatabase = ({ darkMode }) => {
         }
         
         return baseColumns;
-    }, [view, darkMode]);
+    }, [view]);
 
     const {
         getTableProps,
@@ -641,7 +638,7 @@ const CentralDatabase = ({ darkMode }) => {
     } = useTable(
         {
             columns,
-            data: isMassEditMode ? Object.values(massEditValues) : assets,
+            data: isMassEditMode ? (Object.keys(massEditValues).length > 0 ? Object.values(massEditValues) : assets) : assets,
         },
         useFilters,
         useSortBy
@@ -658,10 +655,10 @@ const CentralDatabase = ({ darkMode }) => {
                 document.removeEventListener('paste', handlePaste);
             };
         }
-    }, [isMassEditMode, focusedCell, columns, rows]);
+    }, [isMassEditMode]);
 
     return (
-        <div className={` mx-auto p-4 ${darkMode ? 'dark' : ''}`} ref={tableRef}>
+        <div className={`p-4 ${darkMode ? 'dark' : ''}`} ref={tableRef}>
             <h1 className="mt-20 text-3xl font-bold mb-4 text-center text-gray-900 dark:text-gray-100">Central Database</h1>
             
             <div className={`bg-white shadow-lg rounded-lg dark:bg-gray-800 mb-8 p-4 w-full`}>
@@ -697,9 +694,9 @@ const CentralDatabase = ({ darkMode }) => {
                     {/* ADDED: Mass Edit Button */}
                     <button
                         onClick={toggleMassEditMode}
-                        disabled={assets.length === 0}
+                        disabled={assets.length === 0 || loadingAllUsers}
                         className={`ml-4 px-4 py-2 rounded-md ${
-                            assets.length === 0
+                            assets.length === 0 || loadingAllUsers
                                 ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
                                 : isMassEditMode
                                     ? 'bg-red-600 text-white hover:bg-red-700'
@@ -794,18 +791,21 @@ const CentralDatabase = ({ darkMode }) => {
             )}
 
             {/* MODIFIED: Added overflow container and sticky headers */}
-            <div className="container w-full overflow-x-auto">
-                <table 
-                    {...getTableProps()} 
-                    className="table-auto w-full bg-white dark:bg-gray-800 border-collapse"
-                    style={{ borderSpacing: 0 }}
-                >
+            <div className="w-full overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg">
+                <div className="min-w-full inline-block align-middle">
+                    <div className="overflow-hidden">
+                        <table 
+                            {...getTableProps()} 
+                            className="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
+                            style={{ borderSpacing: 0 }}
+                        >
                     <thead className="sticky top-0 z-10">
-                        {headerGroups.map(headerGroup => (
-                            <React.Fragment key={headerGroup.id}>
+                        {headerGroups.map((headerGroup, index) => (
+                            <React.Fragment key={`header-group-${index}`}>
                                 <tr {...headerGroup.getHeaderGroupProps()}>
-                                    {headerGroup.headers.map(column => (
+                                    {headerGroup.headers.map((column, colIndex) => (
                                         <th
+                                            key={`header-${colIndex}`}
                                             {...column.getHeaderProps(column.getSortByToggleProps())}
                                             className="px-6 py-3 border border-gray-200 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400 dark:border-gray-600"
                                         >
@@ -831,9 +831,9 @@ const CentralDatabase = ({ darkMode }) => {
                                 </tr>
                                 {/* ADDED: Filter row */}
                                 <tr>
-                                    {headerGroup.headers.map(column => (
+                                    {headerGroup.headers.map((column, colIndex) => (
                                         <th
-                                            key={column.id}
+                                            key={`filter-${colIndex}`}
                                             className="px-6 py-2 border border-gray-200 bg-gray-50 dark:bg-gray-700 dark:border-gray-600"
                                         >
                                             {column.canFilter ? column.render('Filter') : null}
@@ -850,8 +850,10 @@ const CentralDatabase = ({ darkMode }) => {
                     <tbody {...getTableBodyProps()} className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                         {rows.map((row, rowIndex) => {
                             prepareRow(row);
+                            if (!row.original) return null; // ADDED: Safety check
                             return (
                                 <tr
+                                    key={row.original.id || rowIndex}
                                     {...row.getRowProps()}
                                     className={`
                                         ${editAssetId === row.original.id ? 'bg-gray-200 dark:bg-gray-600' : ''}
@@ -859,13 +861,14 @@ const CentralDatabase = ({ darkMode }) => {
                                         hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors
                                     `}
                                 >
-                                    {row.cells.map(cell => {
+                                    {row.cells.map((cell, cellIndex) => {
                                         const cellKey = `${rowIndex}-${cell.column.id}`;
                                         const isSelected = selectedCells.has(cellKey);
                                         const isFocused = focusedCell === cellKey;
                                         
                                         return (
                                             <td
+                                                key={`cell-${cellIndex}`}
                                                 {...cell.getCellProps()}
                                                 className={`
                                                     px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 
@@ -882,7 +885,7 @@ const CentralDatabase = ({ darkMode }) => {
                                                 {isMassEditMode ? (
                                                     <input
                                                         type="text"
-                                                        value={massEditValues[row.original.id]?.[cell.column.id] || ''}
+                                                        value={massEditValues[row.original.id]?.[cell.column.id] ?? ''}
                                                         onChange={(e) => handleMassEditChange(row.original.id, cell.column.id, e.target.value)}
                                                         onKeyDown={(e) => handleKeyDown(e, rowIndex, cell.column.id)}
                                                         className={`w-full px-2 py-1 border-0 bg-transparent focus:outline-none focus:ring-1 focus:ring-blue-500 ${
@@ -945,6 +948,8 @@ const CentralDatabase = ({ darkMode }) => {
                         })}
                     </tbody>
                 </table>
+                    </div>
+                </div>
             </div>
 
             {showDeleteConfirm && (
