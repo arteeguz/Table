@@ -768,10 +768,10 @@ const CentralDatabase = ({ darkMode }) => {
 
     return (
         <div className={` mx-auto p-4 ${darkMode ? 'dark' : ''}`}>
-            <h1 className="mt-20 text-3xl font-bold mb-4 text-center text-gray-900 dark:text-gray-100">Central Database</h1>
+            <h1 className="mt-20 text-3xl font-bold mb-4 text-gray-900 dark:text-gray-100">Central Database</h1>
             
             <div className={`bg-white shadow-lg rounded-lg dark:bg-gray-800 mb-8 p-4 w-full`}>
-                <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300 text-center">Actions</h2>
+                <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300">Actions</h2>
                 <div className="flex justify-center">
                     <button
                         onClick={handleFetchAllUserInfo}
@@ -958,15 +958,13 @@ const CentralDatabase = ({ darkMode }) => {
                                                     onMouseUp={handleMouseUp}
                                                     onKeyDown={(e) => handleKeyDown(e, rowIndex, cell.column.id)}
                                                     onPaste={(e) => handlePaste(e, rowIndex, cell.column.id)}
-                                                    className={`w-full px-2 py-1 border rounded focus:outline-none ${
+                                                    className={`block w-full px-3 py-2 border-2 border-dashed rounded-md shadow-sm focus:outline-none text-sm ${
                                                         isCellInRange(rowIndex, cell.column.id)
-                                                            ? 'bg-blue-100 border-blue-500 ring-1 ring-blue-300'
+                                                            ? 'border-red-500 bg-blue-100 dark:bg-blue-900'
                                                             : selectedCell.rowIndex === rowIndex && selectedCell.columnId === cell.column.id
-                                                                ? 'ring-2 ring-blue-500 border-blue-500'
-                                                                : darkMode 
-                                                                    ? 'bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700' 
-                                                                    : 'border-gray-300 bg-white text-gray-900 hover:bg-gray-50'
-                                                    }`}
+                                                                ? 'border-red-500 ring-2 ring-blue-500'
+                                                                : 'border-red-500'
+                                                    } ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-white text-gray-900'}`}
                                                     style={{
                                                         userSelect: isDragging ? 'none' : 'auto'
                                                     }}
