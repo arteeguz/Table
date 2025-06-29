@@ -940,7 +940,7 @@ const CentralDatabase = ({ darkMode }) => {
                                             {...cell.getCellProps()}
                                             className="px-6 py-4 border border-gray-300 dark:border-gray-600 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100"
                                         >
-                                            {/* NEW FEATURE: Excel-like Grid Cell Rendering - EXACT SAME STYLING AS SINGLE EDIT MODE */}
+                                            {/* Excel-like Grid Cell - EXACT SAME TD STYLING AS REGULAR VIEW */}
                                             {isGridEditMode ? (
                                                 <input
                                                     ref={(el) => {
@@ -956,12 +956,12 @@ const CentralDatabase = ({ darkMode }) => {
                                                     onMouseUp={handleMouseUp}
                                                     onKeyDown={(e) => handleKeyDown(e, rowIndex, cell.column.id)}
                                                     onPaste={(e) => handlePaste(e, rowIndex, cell.column.id)}
-                                                    className={`block w-full px-3 py-2 rounded-md shadow-sm focus:outline-none sm:text-sm ${
+                                                    className={`block w-full px-3 py-2 border-2 border-dashed border-red-500 rounded-md shadow-sm focus:outline-none sm:text-sm ${
                                                         isCellInRange(rowIndex, cell.column.id)
-                                                            ? 'border-2 border-blue-500 bg-blue-100 dark:bg-blue-900 dark:border-blue-400'
+                                                            ? 'border-blue-500 bg-blue-100 dark:bg-blue-900 dark:border-blue-400'
                                                             : selectedCell.rowIndex === rowIndex && selectedCell.columnId === cell.column.id
-                                                                ? 'border-2 border-blue-500'
-                                                                : 'border-2 border-dashed border-red-500'
+                                                                ? 'border-blue-500'
+                                                                : ''
                                                     } ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-white text-gray-900'}`}
                                                     style={{
                                                         userSelect: isDragging ? 'none' : 'auto'
