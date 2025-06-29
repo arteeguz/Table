@@ -956,7 +956,8 @@ const CentralDatabase = ({ darkMode }) => {
                                                     onMouseUp={handleMouseUp}
                                                     onKeyDown={(e) => handleKeyDown(e, rowIndex, cell.column.id)}
                                                     onPaste={(e) => handlePaste(e, rowIndex, cell.column.id)}
-                                                    className={`block w-full min-w-32 px-3 py-2 border-2 border-dashed border-red-500 rounded-md shadow-sm focus:outline-none sm:text-sm ${
+                                                    size={Math.max(10, (gridData[rowIndex]?.[cell.column.id] || '').length + 2)}
+                                                    className={`px-3 py-2 border-2 border-dashed border-red-500 rounded-md shadow-sm focus:outline-none sm:text-sm ${
                                                         isCellInRange(rowIndex, cell.column.id)
                                                             ? 'border-blue-500 bg-blue-100 dark:bg-blue-900 dark:border-blue-400'
                                                             : selectedCell.rowIndex === rowIndex && selectedCell.columnId === cell.column.id
