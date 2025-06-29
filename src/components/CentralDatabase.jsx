@@ -894,13 +894,14 @@ const CentralDatabase = ({ darkMode }) => {
             {/* ORIGINAL: Keep original table container structure with horizontal scroll */}
             <div className="container w-full">
                 <table {...getTableProps()} className="table-auto overflow-scroll w-full bg-white dark:bg-gray-800">
-                    <thead>
+                    {/* NEW FEATURE: Sticky Table Headers */}
+                    <thead className="sticky top-0 z-10">
                         {headerGroups.map(headerGroup => (
                             <tr {...headerGroup.getHeaderGroupProps()}>
                                 {headerGroup.headers.map(column => (
                                     <th
                                         {...column.getHeaderProps(column.getSortByToggleProps())}
-                                        className="px-6 py-3 border-b border-gray-200 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400"
+                                        className="px-6 py-3 border border-gray-300 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400"
                                     >
                                         {/* NEW FEATURE: Enhanced header with sorting and filters */}
                                         <div className="flex items-center justify-between cursor-pointer mb-2">
@@ -917,7 +918,7 @@ const CentralDatabase = ({ darkMode }) => {
                                     </th>
                                 ))}
                                 {!isGridEditMode && (
-                                    <th className="px-6 py-3 border-b border-gray-200 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
+                                    <th className="px-6 py-3 border border-gray-300 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                                         Actions
                                     </th>
                                 )}
@@ -930,12 +931,16 @@ const CentralDatabase = ({ darkMode }) => {
                             return (
                                 <tr
                                     {...row.getRowProps()}
-                                    className={`hover:bg-gray-100 dark:hover:bg-gray-700 ${editAssetId === row.original.id ? 'bg-gray-200 dark:bg-gray-600' : ''}`}
+                                    className={`${
+                                        rowIndex % 2 === 0 
+                                            ? 'bg-white dark:bg-gray-800' 
+                                            : 'bg-gray-50 dark:bg-gray-750'
+                                    } hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-150 ${editAssetId === row.original.id ? 'bg-gray-200 dark:bg-gray-600' : ''}`}
                                 >
                                     {row.cells.map(cell => (
                                         <td
                                             {...cell.getCellProps()}
-                                            className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100"
+                                            className="px-6 py-4 border border-gray-300 dark:border-gray-600 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100"
                                         >
                                             {/* NEW FEATURE: Excel-like Grid Cell Rendering */}
                                             {isGridEditMode ? (
@@ -972,7 +977,7 @@ const CentralDatabase = ({ darkMode }) => {
                                                     name={cell.column.id}
                                                     value={editValues[cell.column.id] || ''}
                                                     onChange={handleChange}
-                                                    className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none sm:text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-gray-300' : 'border-gray-300 bg-white text-gray-900'}`}
+                                                    className={`block w-full px-3 py-2 border-2 border-dashed border-red-500 rounded-md shadow-sm focus:outline-none sm:text-sm ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-white text-gray-900'}`}
                                                 />
                                             ) : (
                                                 cell.render('Cell')
@@ -980,7 +985,7 @@ const CentralDatabase = ({ darkMode }) => {
                                         </td>
                                     ))}
                                     {!isGridEditMode && (
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                                        <td className="px-6 py-4 border border-gray-300 dark:border-gray-600 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                                             {editAssetId === row.original.id ? (
                                                 <>
                                                     <button
