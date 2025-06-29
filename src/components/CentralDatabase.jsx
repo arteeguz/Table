@@ -892,8 +892,8 @@ const CentralDatabase = ({ darkMode }) => {
             )}
 
             {/* ORIGINAL: Keep original table container structure with horizontal scroll */}
-            <div className="container w-full">
-                <table {...getTableProps()} className="table-auto overflow-scroll w-full bg-white dark:bg-gray-800">
+            <div className="w-full overflow-auto shadow-lg rounded-lg">
+                <table {...getTableProps()} className="border-collapse bg-white dark:bg-gray-800" style={{width: 'auto', minWidth: '100%'}}>
                     {/* NEW FEATURE: Sticky Table Headers */}
                     <thead className="sticky top-0 z-10">
                         {headerGroups.map(headerGroup => (
@@ -940,7 +940,7 @@ const CentralDatabase = ({ darkMode }) => {
                                     {row.cells.map(cell => (
                                         <td
                                             {...cell.getCellProps()}
-                                            className="px-6 py-4 border border-gray-300 dark:border-gray-600 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100"
+                                            className="px-6 py-4 border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-900 dark:text-gray-100"
                                         >
                                             {/* NEW FEATURE: Excel-like Grid Cell Rendering */}
                                             {isGridEditMode ? (
@@ -958,15 +958,17 @@ const CentralDatabase = ({ darkMode }) => {
                                                     onMouseUp={handleMouseUp}
                                                     onKeyDown={(e) => handleKeyDown(e, rowIndex, cell.column.id)}
                                                     onPaste={(e) => handlePaste(e, rowIndex, cell.column.id)}
-                                                    className={`block w-full px-3 py-2 border-2 border-dashed rounded-md shadow-sm focus:outline-none text-sm ${
+                                                    className={`min-w-full px-6 py-4 border-2 border-dashed border-red-500 bg-transparent focus:outline-none text-sm font-medium resize-none ${
                                                         isCellInRange(rowIndex, cell.column.id)
-                                                            ? 'border-red-500 bg-blue-100 dark:bg-blue-900'
+                                                            ? 'bg-blue-100 dark:bg-blue-900'
                                                             : selectedCell.rowIndex === rowIndex && selectedCell.columnId === cell.column.id
-                                                                ? 'border-red-500 ring-2 ring-blue-500'
-                                                                : 'border-red-500'
-                                                    } ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-white text-gray-900'}`}
+                                                                ? 'ring-2 ring-blue-500'
+                                                                : ''
+                                                    } ${darkMode ? 'text-gray-300' : 'text-gray-900'}`}
                                                     style={{
-                                                        userSelect: isDragging ? 'none' : 'auto'
+                                                        userSelect: isDragging ? 'none' : 'auto',
+                                                        width: 'auto',
+                                                        minWidth: '100%'
                                                     }}
                                                 />
                                             ) : editAssetId === row.original.id ? (
@@ -983,7 +985,7 @@ const CentralDatabase = ({ darkMode }) => {
                                         </td>
                                     ))}
                                     {!isGridEditMode && (
-                                        <td className="px-6 py-4 border border-gray-300 dark:border-gray-600 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                                        <td className="px-6 py-4 border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-900 dark:text-gray-100">
                                             {editAssetId === row.original.id ? (
                                                 <>
                                                     <button
