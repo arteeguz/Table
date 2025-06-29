@@ -890,8 +890,8 @@ const CentralDatabase = ({ darkMode }) => {
             )}
 
             {/* ORIGINAL: Keep original table container structure with horizontal scroll */}
-            <div className="w-full overflow-x-auto">
-                <table {...getTableProps()} className="w-full bg-white dark:bg-gray-800" style={{ tableLayout: 'auto', minWidth: 'max-content' }}>
+            <div className="container w-full">
+                <table {...getTableProps()} className="table-auto overflow-scroll w-full bg-white dark:bg-gray-800">
                     {/* NEW FEATURE: Sticky Table Headers */}
                     <thead className="sticky top-0 z-10">
                         {headerGroups.map(headerGroup => (
@@ -899,8 +899,7 @@ const CentralDatabase = ({ darkMode }) => {
                                 {headerGroup.headers.map(column => (
                                     <th
                                         {...column.getHeaderProps(column.getSortByToggleProps())}
-                                        className="px-6 py-3 border border-gray-300 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400 whitespace-nowrap"
-                                        style={{ minWidth: 'max-content' }}
+                                        className="px-6 py-3 border border-gray-300 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400"
                                     >
                                         {/* NEW FEATURE: Enhanced header with sorting and filters */}
                                         <div className="flex items-center justify-between cursor-pointer mb-2">
@@ -939,12 +938,10 @@ const CentralDatabase = ({ darkMode }) => {
                                     {row.cells.map(cell => (
                                         <td
                                             {...cell.getCellProps()}
-                                            className={`px-6 py-4 border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap`}
-                                            style={{ minWidth: 'max-content' }}
+                                            className="px-6 py-4 border border-gray-300 dark:border-gray-600 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100"
                                         >
                                             {/* NEW FEATURE: Excel-like Grid Cell Rendering */}
                                             {isGridEditMode ? (
-                                                <div style={{ minWidth: 'max-content' }}>
                                                 <input
                                                     ref={(el) => {
                                                         const key = `${rowIndex}-${cell.column.id}`;
@@ -959,7 +956,7 @@ const CentralDatabase = ({ darkMode }) => {
                                                     onMouseUp={handleMouseUp}
                                                     onKeyDown={(e) => handleKeyDown(e, rowIndex, cell.column.id)}
                                                     onPaste={(e) => handlePaste(e, rowIndex, cell.column.id)}
-                                                    className={`w-full px-2 py-1 border rounded focus:outline-none text-sm font-medium ${
+                                                    className={`px-2 py-1 border rounded focus:outline-none text-sm font-medium ${
                                                         isCellInRange(rowIndex, cell.column.id)
                                                             ? 'bg-blue-100 border-blue-500 ring-1 ring-blue-300'
                                                             : selectedCell.rowIndex === rowIndex && selectedCell.columnId === cell.column.id
@@ -970,12 +967,11 @@ const CentralDatabase = ({ darkMode }) => {
                                                     }`}
                                                     style={{
                                                         userSelect: isDragging ? 'none' : 'auto',
-                                                        minWidth: `${Math.max((gridData[rowIndex]?.[cell.column.id] || '').toString().length, 12)}ch`,
-                                                        paddingLeft: '8px',
-                                                        paddingRight: '8px'
+                                                        width: '100%',
+                                                        minWidth: '0',
+                                                        boxSizing: 'border-box'
                                                     }}
                                                 />
-                                                </div>
                                             ) : editAssetId === row.original.id ? (
                                                 <input
                                                     type="text"
@@ -990,7 +986,7 @@ const CentralDatabase = ({ darkMode }) => {
                                         </td>
                                     ))}
                                     {!isGridEditMode && (
-                                        <td className="px-6 py-4 border border-gray-300 dark:border-gray-600 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100" style={{ minWidth: 'max-content' }}>
+                                        <td className="px-6 py-4 border border-gray-300 dark:border-gray-600 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                                             {editAssetId === row.original.id ? (
                                                 <>
                                                     <button
