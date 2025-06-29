@@ -768,10 +768,11 @@ const CentralDatabase = ({ darkMode }) => {
 
     return (
         <div className={` mx-auto p-4 ${darkMode ? 'dark' : ''}`}>
-            <div className={`bg-white shadow-lg rounded-lg dark:bg-gray-800 mb-8 p-6 w-full mt-20`}>
-                <h1 className="text-3xl font-bold mb-6 text-gray-900 dark:text-gray-100">Central Database</h1>
-                <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300">Actions</h2>
-                <div className="flex justify-start items-center gap-4">
+            <h1 className="mt-20 text-3xl font-bold mb-4 text-center text-gray-900 dark:text-gray-100">Central Database</h1>
+            
+            <div className={`bg-white shadow-lg rounded-lg dark:bg-gray-800 mb-8 p-4 w-full`}>
+                <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300 text-center">Actions</h2>
+                <div className="flex justify-center">
                     <button
                         onClick={handleFetchAllUserInfo}
                         className={` mr-5 px-4 py-2 rounded-md ${darkMode ? 'bg-green-500 text-gray-100 hover:bg-blue-700' : 'bg-green-500 text-white hover:bg-blue-600'}`}
@@ -817,7 +818,7 @@ const CentralDatabase = ({ darkMode }) => {
                         onChange={handleFileChange}
                         style={{ display: 'none' }}
                     />
-                <div className="ml-10">
+                <div className="ml-10 text-center">
                     <select
                         value={view}
                         onChange={(e) => setView(e.target.value)}
@@ -830,7 +831,7 @@ const CentralDatabase = ({ darkMode }) => {
                         <option value="Mobility">Mobility View</option>
                     </select>
                 </div>
-                <div className="ml-10 flex items-center gap-2">
+                <div className="ml-10 text-center flex items-center gap-2">
                     <select 
                         value={selectedTableName}
                         onChange={handleSelectChange}
@@ -854,7 +855,8 @@ const CentralDatabase = ({ darkMode }) => {
                         </button>
                     )}
                 </div>
-                </div>
+
+            </div>
             </div>
 
             {/* NEW FEATURE: Excel-like Mass Edit Save/Cancel Bar */}
@@ -938,9 +940,9 @@ const CentralDatabase = ({ darkMode }) => {
                                     {row.cells.map(cell => (
                                         <td
                                             {...cell.getCellProps()}
-                                            className={`px-6 py-4 border border-gray-300 dark:border-gray-600 ${isGridEditMode ? 'whitespace-normal' : 'whitespace-nowrap'} text-sm font-medium text-gray-900 dark:text-gray-100`}
+                                            className="px-6 py-4 border border-gray-300 dark:border-gray-600 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100"
                                         >
-                                            {/* Excel-like Grid Cell - EXACT SAME TD STYLING AS REGULAR VIEW */}
+                                            {/* NEW FEATURE: Excel-like Grid Cell Rendering */}
                                             {isGridEditMode ? (
                                                 <input
                                                     ref={(el) => {
@@ -956,14 +958,15 @@ const CentralDatabase = ({ darkMode }) => {
                                                     onMouseUp={handleMouseUp}
                                                     onKeyDown={(e) => handleKeyDown(e, rowIndex, cell.column.id)}
                                                     onPaste={(e) => handlePaste(e, rowIndex, cell.column.id)}
-                                                    size={Math.max(10, (gridData[rowIndex]?.[cell.column.id] || '').length + 2)}
-                                                    className={`px-3 py-2 border-2 border-dashed border-red-500 rounded-md shadow-sm focus:outline-none sm:text-sm ${
+                                                    className={`w-full px-2 py-1 border rounded focus:outline-none ${
                                                         isCellInRange(rowIndex, cell.column.id)
-                                                            ? 'border-blue-500 bg-blue-100 dark:bg-blue-900 dark:border-blue-400'
+                                                            ? 'bg-blue-100 border-blue-500 ring-1 ring-blue-300'
                                                             : selectedCell.rowIndex === rowIndex && selectedCell.columnId === cell.column.id
-                                                                ? 'border-blue-500'
-                                                                : ''
-                                                    } ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-white text-gray-900'}`}
+                                                                ? 'ring-2 ring-blue-500 border-blue-500'
+                                                                : darkMode 
+                                                                    ? 'bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700' 
+                                                                    : 'border-gray-300 bg-white text-gray-900 hover:bg-gray-50'
+                                                    }`}
                                                     style={{
                                                         userSelect: isDragging ? 'none' : 'auto'
                                                     }}
