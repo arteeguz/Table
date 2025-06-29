@@ -1,22 +1,11 @@
-import React, { useEffect, useState, useContext, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useContext, useRef, useCallback } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-    faSave, 
-    faTimes, 
-    faEdit, 
-    faUser, 
-    faTrashAlt, 
-    faFileExcel, 
-    faSync, 
-    faUpload,
-    faSortUp,
-    faSortDown,
-    faSort
-} from '@fortawesome/free-solid-svg-icons';
+import { faSave, faTimes, faEdit, faUser, faTrashAlt, faFileExcel, faSync, faUpload, faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
 import { useTable, useFilters, useSortBy } from 'react-table';
 import { useTableContext } from './TableContext';
 import * as XLSX from 'xlsx';
 import axios from 'axios';
+
 
 const CentralDatabase = ({ darkMode }) => {
     const [assets, setAssets] = useState([]);
@@ -31,184 +20,20 @@ const CentralDatabase = ({ darkMode }) => {
     const [tableNames, setTableNames] = useState([]);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [tableToDelete, setTableToDelete] = useState('');
-    
-    // ADDED: New state for Mass Edit functionality
-    const [isMassEditMode, setIsMassEditMode] = useState(false);
+
+    // **ADDING: Mass edit mode state and functionality**
+    const [massEditMode, setMassEditMode] = useState(false);
     const [selectedCells, setSelectedCells] = useState(new Set());
-    const [selectedRange, setSelectedRange] = useState(null);
-    const [editData, setEditData] = useState({});
+    const [selectedRange, setSelectedRange] = useState({ start: null, end: null });
+    const [massEditValues, setMassEditValues] = useState({});
     const [isSelecting, setIsSelecting] = useState(false);
-    const [dragStart, setDragStart] = useState(null);
+    const [startCell, setStartCell] = useState(null);
     const [columnFilters, setColumnFilters] = useState({});
-    const [hasChanges, setHasChanges] = useState(false);
     const tableRef = useRef(null);
-    const [lastClickedCell, setLastClickedCell] = useState(null);
 
     useEffect(() => {
         fetchAssets();
     }, [selectedTableName]);
-
-    // ADDED: Initialize edit data when entering mass edit mode
-    useEffect(() => {
-        if (isMassEditMode) {
-            const initialEditData = {};
-            assets.forEach(asset => {
-                Object.keys(asset).forEach(key => {
-                    initialEditData[`${asset.id}-${key}`] = asset[key] || '';
-                });
-            });
-            setEditData(initialEditData);
-        }
-    }, [isMassEditMode, assets]);
-
-    // ADDED: Keyboard event handler for Excel-like navigation
-    useEffect(() => {
-        const handleKeyDown = (e) => {
-            if (!isMassEditMode) return;
-
-            const activeElement = document.activeElement;
-            if (activeElement && activeElement.dataset.cellKey) {
-                const [assetId, columnId] = activeElement.dataset.cellKey.split('-');
-                const currentAssetIndex = assets.findIndex(asset => asset.id.toString() === assetId);
-                const currentColumnIndex = columns.findIndex(col => col.accessor === columnId);
-
-                switch (e.key) {
-                    case 'Enter':
-                        e.preventDefault();
-                        // Move down to next row
-                        if (currentAssetIndex < assets.length - 1) {
-                            const nextAsset = assets[currentAssetIndex + 1];
-                            const nextCellKey = `${nextAsset.id}-${columnId}`;
-                            const nextCell = document.querySelector(`[data-cell-key="${nextCellKey}"]`);
-                            if (nextCell) nextCell.focus();
-                        }
-                        break;
-                    case 'Tab':
-                        e.preventDefault();
-                        // Move right to next column or wrap to next row
-                        if (e.shiftKey) {
-                            // Shift+Tab: Move left
-                            if (currentColumnIndex > 0) {
-                                const prevColumn = columns[currentColumnIndex - 1];
-                                const prevCellKey = `${assetId}-${prevColumn.accessor}`;
-                                const prevCell = document.querySelector(`[data-cell-key="${prevCellKey}"]`);
-                                if (prevCell) prevCell.focus();
-                            }
-                        } else {
-                            // Tab: Move right
-                            if (currentColumnIndex < columns.length - 1) {
-                                const nextColumn = columns[currentColumnIndex + 1];
-                                const nextCellKey = `${assetId}-${nextColumn.accessor}`;
-                                const nextCell = document.querySelector(`[data-cell-key="${nextCellKey}"]`);
-                                if (nextCell) nextCell.focus();
-                            } else if (currentAssetIndex < assets.length - 1) {
-                                // Wrap to first column of next row
-                                const nextAsset = assets[currentAssetIndex + 1];
-                                const firstColumn = columns[0];
-                                const nextCellKey = `${nextAsset.id}-${firstColumn.accessor}`;
-                                const nextCell = document.querySelector(`[data-cell-key="${nextCellKey}"]`);
-                                if (nextCell) nextCell.focus();
-                            }
-                        }
-                        break;
-                    case 'ArrowUp':
-                        e.preventDefault();
-                        if (currentAssetIndex > 0) {
-                            const prevAsset = assets[currentAssetIndex - 1];
-                            const prevCellKey = `${prevAsset.id}-${columnId}`;
-                            const prevCell = document.querySelector(`[data-cell-key="${prevCellKey}"]`);
-                            if (prevCell) prevCell.focus();
-                        }
-                        break;
-                    case 'ArrowDown':
-                        e.preventDefault();
-                        if (currentAssetIndex < assets.length - 1) {
-                            const nextAsset = assets[currentAssetIndex + 1];
-                            const nextCellKey = `${nextAsset.id}-${columnId}`;
-                            const nextCell = document.querySelector(`[data-cell-key="${nextCellKey}"]`);
-                            if (nextCell) nextCell.focus();
-                        }
-                        break;
-                    case 'ArrowLeft':
-                        e.preventDefault();
-                        if (currentColumnIndex > 0) {
-                            const prevColumn = columns[currentColumnIndex - 1];
-                            const prevCellKey = `${assetId}-${prevColumn.accessor}`;
-                            const prevCell = document.querySelector(`[data-cell-key="${prevCellKey}"]`);
-                            if (prevCell) prevCell.focus();
-                        }
-                        break;
-                    case 'ArrowRight':
-                        e.preventDefault();
-                        if (currentColumnIndex < columns.length - 1) {
-                            const nextColumn = columns[currentColumnIndex + 1];
-                            const nextCellKey = `${assetId}-${nextColumn.accessor}`;
-                            const nextCell = document.querySelector(`[data-cell-key="${nextCellKey}"]`);
-                            if (nextCell) nextCell.focus();
-                        }
-                        break;
-                    case 'Delete':
-                    case 'Backspace':
-                        // Clear selected cells
-                        if (selectedCells.size > 0) {
-                            const newEditData = { ...editData };
-                            selectedCells.forEach(cellKey => {
-                                newEditData[cellKey] = '';
-                            });
-                            setEditData(newEditData);
-                            setHasChanges(true);
-                        }
-                        break;
-                }
-            }
-        };
-
-        // ADDED: Paste handler for Excel-like paste functionality
-        const handlePaste = (e) => {
-            if (!isMassEditMode) return;
-            
-            e.preventDefault();
-            const pasteData = e.clipboardData.getData('text');
-            const rows = pasteData.split('\n').filter(row => row.trim());
-            const activeElement = document.activeElement;
-            
-            if (activeElement && activeElement.dataset.cellKey && rows.length > 0) {
-                const [startAssetId, startColumnId] = activeElement.dataset.cellKey.split('-');
-                const startAssetIndex = assets.findIndex(asset => asset.id.toString() === startAssetId);
-                const startColumnIndex = columns.findIndex(col => col.accessor === startColumnId);
-                
-                const newEditData = { ...editData };
-                
-                rows.forEach((row, rowOffset) => {
-                    const cells = row.split('\t');
-                    cells.forEach((cellValue, colOffset) => {
-                        const targetAssetIndex = startAssetIndex + rowOffset;
-                        const targetColumnIndex = startColumnIndex + colOffset;
-                        
-                        if (targetAssetIndex < assets.length && targetColumnIndex < columns.length) {
-                            const targetAsset = assets[targetAssetIndex];
-                            const targetColumn = columns[targetColumnIndex];
-                            const cellKey = `${targetAsset.id}-${targetColumn.accessor}`;
-                            newEditData[cellKey] = cellValue.trim();
-                        }
-                    });
-                });
-                
-                setEditData(newEditData);
-                setHasChanges(true);
-            }
-        };
-
-        if (isMassEditMode) {
-            document.addEventListener('keydown', handleKeyDown);
-            document.addEventListener('paste', handlePaste);
-        }
-
-        return () => {
-            document.removeEventListener('keydown', handleKeyDown);
-            document.removeEventListener('paste', handlePaste);
-        };
-    }, [isMassEditMode, assets, columns, editData, selectedCells]);
 
     const handleSelectChange = (e) => {
         setSelectedTableName(e.target.value);
@@ -218,7 +43,7 @@ const CentralDatabase = ({ darkMode }) => {
     useEffect(() => {
         const fetchTableNames = async () => {
             try {
-                const response = await fetch('http://se160590.fg.rbc.com:5000/api/table-names');
+                const response = await fetch('http://sei60590.fg.rbc.com:5000/api/table-names');
                 if (!response.ok){
                     throw new Error('Failed to fetch table names');
                 }
@@ -235,7 +60,7 @@ const CentralDatabase = ({ darkMode }) => {
     
     const fetchAssets = async () => {
         try {
-            const url = selectedTableName ? `http://se160590.fg.rbc.com:5000/api/asset-by-table?table_name=${selectedTableName}` : 'http://se160590.fg.rbc.com:5000/api/assets';
+            const url = selectedTableName ? `http://sei60590.fg.rbc.com:5000/api/asset-by-table?table_name=${selectedTableName}` : 'http://sei60590.fg.rbc.com:5000/api/assets';
             const response = await fetch(url);
             if (!response.ok) {
                 throw new Error('Failed to fetch assets');
@@ -265,7 +90,7 @@ const CentralDatabase = ({ darkMode }) => {
 
     const handleSaveClick = async () => {
         try {
-            const response = await fetch(`http://se160590.fg.rbc.com:5000/api/assets/${editAssetId}`, {
+            const response = await fetch(`http://sei60590.fg.rbc.com:5000/api/assets/${editAssetId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -284,9 +109,304 @@ const CentralDatabase = ({ darkMode }) => {
         }
     };
 
+    // **ADDING: Mass edit functions**
+    const toggleMassEditMode = () => {
+        if (massEditMode) {
+            // Exit mass edit mode
+            setMassEditMode(false);
+            setSelectedCells(new Set());
+            setSelectedRange({ start: null, end: null });
+            setMassEditValues({});
+        } else {
+            // Enter mass edit mode
+            setMassEditMode(true);
+            // Initialize mass edit values with current asset data
+            const initialValues = {};
+            assets.forEach(asset => {
+                Object.keys(asset).forEach(key => {
+                    initialValues[`${asset.id}-${key}`] = asset[key] || '';
+                });
+            });
+            setMassEditValues(initialValues);
+        }
+    };
+
+    // **ADDING: Cell selection functions**
+    const getCellId = (rowId, columnId) => `${rowId}-${columnId}`;
+
+    const handleCellClick = (rowId, columnId, event) => {
+        if (!massEditMode) return;
+        
+        const cellId = getCellId(rowId, columnId);
+        
+        if (event.shiftKey && startCell) {
+            // Select range
+            selectRange(startCell, { rowId, columnId });
+        } else {
+            // Select single cell
+            setSelectedCells(new Set([cellId]));
+            setStartCell({ rowId, columnId });
+            setSelectedRange({ start: null, end: null });
+        }
+    };
+
+    const selectRange = (start, end) => {
+        const startRowIndex = assets.findIndex(asset => asset.id === start.rowId);
+        const endRowIndex = assets.findIndex(asset => asset.id === end.rowId);
+        const columns = Object.keys(assets[0] || {});
+        const startColIndex = columns.indexOf(start.columnId);
+        const endColIndex = columns.indexOf(end.columnId);
+
+        const minRow = Math.min(startRowIndex, endRowIndex);
+        const maxRow = Math.max(startRowIndex, endRowIndex);
+        const minCol = Math.min(startColIndex, endColIndex);
+        const maxCol = Math.max(startColIndex, endColIndex);
+
+        const newSelectedCells = new Set();
+        for (let r = minRow; r <= maxRow; r++) {
+            for (let c = minCol; c <= maxCol; c++) {
+                const rowId = assets[r].id;
+                const columnId = columns[c];
+                newSelectedCells.add(getCellId(rowId, columnId));
+            }
+        }
+        setSelectedCells(newSelectedCells);
+        setSelectedRange({ start, end });
+    };
+
+    // **ADDING: Mass edit input handling**
+    const handleMassEditChange = (rowId, columnId, value) => {
+        const cellId = getCellId(rowId, columnId);
+        setMassEditValues(prev => ({
+            ...prev,
+            [cellId]: value
+        }));
+
+        // If multiple cells are selected, update all of them
+        if (selectedCells.size > 1 && selectedCells.has(cellId)) {
+            const newValues = { ...massEditValues };
+            selectedCells.forEach(selectedCellId => {
+                newValues[selectedCellId] = value;
+            });
+            setMassEditValues(newValues);
+        }
+    };
+
+    // **ADDING: Keyboard navigation**
+    const handleKeyDown = useCallback((event, rowId, columnId) => {
+        if (!massEditMode) return;
+
+        const columns = Object.keys(assets[0] || {});
+        const currentRowIndex = assets.findIndex(asset => asset.id === rowId);
+        const currentColIndex = columns.indexOf(columnId);
+
+        switch (event.key) {
+            case 'Enter':
+                event.preventDefault();
+                if (currentRowIndex < assets.length - 1) {
+                    const nextRowId = assets[currentRowIndex + 1].id;
+                    handleCellClick(nextRowId, columnId, event);
+                    // Focus next cell
+                    setTimeout(() => {
+                        const nextCell = document.querySelector(`[data-cell-id="${getCellId(nextRowId, columnId)}"]`);
+                        if (nextCell) nextCell.focus();
+                    }, 0);
+                }
+                break;
+            case 'Tab':
+                event.preventDefault();
+                if (event.shiftKey) {
+                    // Move left
+                    if (currentColIndex > 0) {
+                        const prevColumnId = columns[currentColIndex - 1];
+                        handleCellClick(rowId, prevColumnId, event);
+                        setTimeout(() => {
+                            const prevCell = document.querySelector(`[data-cell-id="${getCellId(rowId, prevColumnId)}"]`);
+                            if (prevCell) prevCell.focus();
+                        }, 0);
+                    }
+                } else {
+                    // Move right
+                    if (currentColIndex < columns.length - 1) {
+                        const nextColumnId = columns[currentColIndex + 1];
+                        handleCellClick(rowId, nextColumnId, event);
+                        setTimeout(() => {
+                            const nextCell = document.querySelector(`[data-cell-id="${getCellId(rowId, nextColumnId)}"]`);
+                            if (nextCell) nextCell.focus();
+                        }, 0);
+                    }
+                }
+                break;
+            case 'ArrowUp':
+                event.preventDefault();
+                if (currentRowIndex > 0) {
+                    const prevRowId = assets[currentRowIndex - 1].id;
+                    handleCellClick(prevRowId, columnId, event);
+                    setTimeout(() => {
+                        const prevCell = document.querySelector(`[data-cell-id="${getCellId(prevRowId, columnId)}"]`);
+                        if (prevCell) prevCell.focus();
+                    }, 0);
+                }
+                break;
+            case 'ArrowDown':
+                event.preventDefault();
+                if (currentRowIndex < assets.length - 1) {
+                    const nextRowId = assets[currentRowIndex + 1].id;
+                    handleCellClick(nextRowId, columnId, event);
+                    setTimeout(() => {
+                        const nextCell = document.querySelector(`[data-cell-id="${getCellId(nextRowId, columnId)}"]`);
+                        if (nextCell) nextCell.focus();
+                    }, 0);
+                }
+                break;
+            case 'ArrowLeft':
+                event.preventDefault();
+                if (currentColIndex > 0) {
+                    const prevColumnId = columns[currentColIndex - 1];
+                    handleCellClick(rowId, prevColumnId, event);
+                    setTimeout(() => {
+                        const prevCell = document.querySelector(`[data-cell-id="${getCellId(rowId, prevColumnId)}"]`);
+                        if (prevCell) prevCell.focus();
+                    }, 0);
+                }
+                break;
+            case 'ArrowRight':
+                event.preventDefault();
+                if (currentColIndex < columns.length - 1) {
+                    const nextColumnId = columns[currentColIndex + 1];
+                    handleCellClick(rowId, nextColumnId, event);
+                    setTimeout(() => {
+                        const nextCell = document.querySelector(`[data-cell-id="${getCellId(rowId, nextColumnId)}"]`);
+                        if (nextCell) nextCell.focus();
+                    }, 0);
+                }
+                break;
+            case 'Delete':
+            case 'Backspace':
+                event.preventDefault();
+                // Clear selected cells
+                const clearedValues = { ...massEditValues };
+                selectedCells.forEach(cellId => {
+                    clearedValues[cellId] = '';
+                });
+                setMassEditValues(clearedValues);
+                break;
+        }
+    }, [massEditMode, assets, selectedCells, massEditValues]);
+
+    // **ADDING: Copy/Paste functionality**
+    useEffect(() => {
+        const handlePaste = async (event) => {
+            if (!massEditMode || selectedCells.size === 0) return;
+            
+            event.preventDefault();
+            const clipboardData = event.clipboardData || window.clipboardData;
+            const pastedData = clipboardData.getData('text');
+            
+            // Parse tab-separated values
+            const rows = pastedData.split('\n').filter(row => row.trim());
+            const parsedData = rows.map(row => row.split('\t'));
+            
+            // Apply pasted data to selected cells
+            const selectedCellsArray = Array.from(selectedCells);
+            const firstCellId = selectedCellsArray[0];
+            const [firstRowId, firstColumnId] = firstCellId.split('-');
+            
+            const columns = Object.keys(assets[0] || {});
+            const firstRowIndex = assets.findIndex(asset => asset.id === parseInt(firstRowId));
+            const firstColIndex = columns.indexOf(firstColumnId);
+            
+            const newValues = { ...massEditValues };
+            
+            parsedData.forEach((row, rowOffset) => {
+                row.forEach((cellValue, colOffset) => {
+                    const targetRowIndex = firstRowIndex + rowOffset;
+                    const targetColIndex = firstColIndex + colOffset;
+                    
+                    if (targetRowIndex < assets.length && targetColIndex < columns.length) {
+                        const targetRowId = assets[targetRowIndex].id;
+                        const targetColumnId = columns[targetColIndex];
+                        const targetCellId = getCellId(targetRowId, targetColumnId);
+                        newValues[targetCellId] = cellValue;
+                    }
+                });
+            });
+            
+            setMassEditValues(newValues);
+        };
+
+        if (massEditMode) {
+            document.addEventListener('paste', handlePaste);
+            return () => document.removeEventListener('paste', handlePaste);
+        }
+    }, [massEditMode, selectedCells, massEditValues, assets]);
+
+    // **ADDING: Save all changes function**
+    const handleSaveAllChanges = async () => {
+        try {
+            const updates = [];
+            
+            // Group changes by asset ID
+            const changesByAsset = {};
+            Object.entries(massEditValues).forEach(([cellId, value]) => {
+                const [rowId, columnId] = cellId.split('-');
+                if (!changesByAsset[rowId]) {
+                    changesByAsset[rowId] = { id: parseInt(rowId) };
+                }
+                changesByAsset[rowId][columnId] = value;
+            });
+            
+            // Send updates to backend
+            for (const [assetId, changes] of Object.entries(changesByAsset)) {
+                const response = await fetch(`http://sei60590.fg.rbc.com:5000/api/assets/${assetId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(changes),
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to update asset ${assetId}`);
+                }
+            }
+            
+            // Refresh assets and exit mass edit mode
+            await fetchAssets();
+            setMassEditMode(false);
+            setSelectedCells(new Set());
+            setMassEditValues({});
+            alert('All changes saved successfully!');
+        } catch (error) {
+            console.error('Failed to save changes:', error);
+            alert('Failed to save some changes. Please try again.');
+        }
+    };
+
+    // **ADDING: Column filter function**
+    const handleColumnFilterChange = (columnId, value) => {
+        setColumnFilters(prev => ({
+            ...prev,
+            [columnId]: value
+        }));
+    };
+
+    // **ADDING: Filter assets based on column filters**
+    const filteredAssets = React.useMemo(() => {
+        if (Object.keys(columnFilters).length === 0) return assets;
+        
+        return assets.filter(asset => {
+            return Object.entries(columnFilters).every(([columnId, filterValue]) => {
+                if (!filterValue) return true;
+                const cellValue = asset[columnId]?.toString().toLowerCase() || '';
+                return cellValue.includes(filterValue.toLowerCase());
+            });
+        });
+    }, [assets, columnFilters]);
+
     const handleFetchUserInfo = async (employeeId) => {
         try {
-            const response = await fetch('http://se160590.fg.rbc.com:5000/api/run-powershell', {
+            const response = await fetch('http://sei60590.fg.rbc.com:5000/api/run-powershell', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -372,7 +492,7 @@ const CentralDatabase = ({ darkMode }) => {
                     home_drive: driveID
                 };
 
-                const response = await fetch(`http://se160590.fg.rbc.com:5000/api/assets/${assetToUpdate.id}`, {
+                const response = await fetch(`http://sei60590.fg.rbc.com:5000/api/assets/${assetToUpdate.id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -417,7 +537,7 @@ const CentralDatabase = ({ darkMode }) => {
 
     const handleDelete = async (assetId) => {
         try {
-            const response = await fetch(`http://se160590.fg.rbc.com:5000/api/assets/${assetId}`, {
+            const response = await fetch(`http://sei60590.fg.rbc.com:5000/api/assets/${assetId}`, {
                 method: 'DELETE',
             });
             if (!response.ok) {
@@ -442,7 +562,7 @@ const CentralDatabase = ({ darkMode }) => {
         formData.append('file', file);
 
         try {
-            const response = await axios.post('http://se160590.fg.rbc.com:5000/api/upload', formData, {
+            const response = await axios.post('http://sei60590.fg.rbc.com:5000/api/upload', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -472,7 +592,7 @@ const CentralDatabase = ({ darkMode }) => {
 
     const confirmDeleteTable = async () => {
         try {
-            const response = await fetch(`http://se160590.fg.rbc.com:5000/api/tables/${tableToDelete}`, {
+            const response = await fetch(`http://sei60590.fg.rbc.com:5000/api/tables/${tableToDelete}`, {
                 method: 'DELETE',
             });
             
@@ -489,7 +609,7 @@ const CentralDatabase = ({ darkMode }) => {
             setTableToDelete('');
             
             // Refresh table names and assets
-            const tableNamesResponse = await fetch('http://se160590.fg.rbc.com:5000/api/table-names');
+            const tableNamesResponse = await fetch('http://sei60590.fg.rbc.com:5000/api/table-names');
             const tableNamesData = await tableNamesResponse.json();
             setTableNames(tableNamesData);
             
@@ -504,164 +624,6 @@ const CentralDatabase = ({ darkMode }) => {
         setShowDeleteConfirm(false);
         setTableToDelete('');
     };
-
-    // ADDED: Mass Edit Mode functions
-    const toggleMassEditMode = () => {
-        if (isMassEditMode) {
-            // Exit mass edit mode
-            setIsMassEditMode(false);
-            setSelectedCells(new Set());
-            setSelectedRange(null);
-            setEditData({});
-            setHasChanges(false);
-            setLastClickedCell(null);
-        } else {
-            // Enter mass edit mode
-            setIsMassEditMode(true);
-            setEditAssetId(null); // Close any individual edit
-        }
-    };
-
-    // ADDED: Handle cell click for selection
-    const handleCellClick = (e, assetId, columnId) => {
-        if (!isMassEditMode) return;
-
-        const cellKey = `${assetId}-${columnId}`;
-        
-        if (e.shiftKey && lastClickedCell) {
-            // Range selection with Shift+click
-            selectRange(lastClickedCell, cellKey);
-        } else {
-            // Single cell selection
-            if (e.ctrlKey || e.metaKey) {
-                // Add to selection with Ctrl+click
-                const newSelection = new Set(selectedCells);
-                if (newSelection.has(cellKey)) {
-                    newSelection.delete(cellKey);
-                } else {
-                    newSelection.add(cellKey);
-                }
-                setSelectedCells(newSelection);
-            } else {
-                // Replace selection
-                setSelectedCells(new Set([cellKey]));
-            }
-            setLastClickedCell(cellKey);
-        }
-    };
-
-    // ADDED: Handle range selection
-    const selectRange = (startCell, endCell) => {
-        const [startAssetId, startColumnId] = startCell.split('-');
-        const [endAssetId, endColumnId] = endCell.split('-');
-        
-        const startAssetIndex = assets.findIndex(asset => asset.id.toString() === startAssetId);
-        const endAssetIndex = assets.findIndex(asset => asset.id.toString() === endAssetId);
-        const startColumnIndex = columns.findIndex(col => col.accessor === startColumnId);
-        const endColumnIndex = columns.findIndex(col => col.accessor === endColumnId);
-        
-        const minAssetIndex = Math.min(startAssetIndex, endAssetIndex);
-        const maxAssetIndex = Math.max(startAssetIndex, endAssetIndex);
-        const minColumnIndex = Math.min(startColumnIndex, endColumnIndex);
-        const maxColumnIndex = Math.max(startColumnIndex, endColumnIndex);
-        
-        const rangeCells = new Set();
-        for (let assetIndex = minAssetIndex; assetIndex <= maxAssetIndex; assetIndex++) {
-            for (let columnIndex = minColumnIndex; columnIndex <= maxColumnIndex; columnIndex++) {
-                const asset = assets[assetIndex];
-                const column = columns[columnIndex];
-                if (asset && column) {
-                    rangeCells.add(`${asset.id}-${column.accessor}`);
-                }
-            }
-        }
-        
-        setSelectedCells(rangeCells);
-        setSelectedRange({ start: startCell, end: endCell });
-    };
-
-    // ADDED: Handle cell value change in mass edit mode
-    const handleCellChange = (cellKey, value) => {
-        const newEditData = { ...editData };
-        newEditData[cellKey] = value;
-        setEditData(newEditData);
-        setHasChanges(true);
-    };
-
-    // ADDED: Handle batch save
-    const handleBatchSave = async () => {
-        try {
-            const updates = [];
-            
-            // Group changes by asset ID
-            const assetUpdates = {};
-            Object.keys(editData).forEach(cellKey => {
-                const [assetId, columnId] = cellKey.split('-');
-                if (!assetUpdates[assetId]) {
-                    assetUpdates[assetId] = { id: assetId };
-                }
-                assetUpdates[assetId][columnId] = editData[cellKey];
-            });
-
-            // Send updates to server
-            for (const assetId in assetUpdates) {
-                const updateData = assetUpdates[assetId];
-                const response = await fetch(`http://se160590.fg.rbc.com:5000/api/assets/${assetId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(updateData),
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`Failed to update asset ${assetId}`);
-                }
-            }
-
-            // Refresh assets and exit mass edit mode
-            await fetchAssets();
-            setIsMassEditMode(false);
-            setSelectedCells(new Set());
-            setEditData({});
-            setHasChanges(false);
-            alert('All changes saved successfully!');
-        } catch (error) {
-            console.error('Failed to save changes:', error);
-            alert('Error saving changes. Please try again.');
-        }
-    };
-
-    // ADDED: Handle cancel all changes
-    const handleCancelAllChanges = () => {
-        setIsMassEditMode(false);
-        setSelectedCells(new Set());
-        setEditData({});
-        setHasChanges(false);
-        setSelectedRange(null);
-        setLastClickedCell(null);
-    };
-
-    // ADDED: Column filter handler
-    const handleColumnFilterChange = (columnId, value) => {
-        setColumnFilters(prev => ({
-            ...prev,
-            [columnId]: value
-        }));
-    };
-
-    // ADDED: Filter assets based on column filters
-    const filteredAssets = React.useMemo(() => {
-        if (Object.keys(columnFilters).length === 0) return assets;
-        
-        return assets.filter(asset => {
-            return Object.entries(columnFilters).every(([columnId, filterValue]) => {
-                if (!filterValue) return true;
-                const cellValue = asset[columnId];
-                return cellValue && cellValue.toString().toLowerCase().includes(filterValue.toLowerCase());
-            });
-        });
-    }, [assets, columnFilters]);
 
     const columns = React.useMemo(() => {
         if (view === 'default') {
@@ -736,7 +698,7 @@ const CentralDatabase = ({ darkMode }) => {
     } = useTable(
         {
             columns,
-            data: filteredAssets, // MODIFIED: Use filtered assets instead of assets
+            data: filteredAssets, // **CHANGED: Use filtered assets instead of assets**
         },
         useFilters,
         useSortBy
@@ -746,35 +708,28 @@ const CentralDatabase = ({ darkMode }) => {
         <div className={` mx-auto p-4 ${darkMode ? 'dark' : ''}`}>
             <h1 className="mt-20 text-3xl font-bold mb-4 text-center text-gray-900 dark:text-gray-100">Central Database</h1>
             
-            {/* ADDED: Information bar for Mass Edit mode */}
-            {isMassEditMode && (
-                <div className="bg-yellow-100 dark:bg-yellow-900 border-l-4 border-yellow-500 p-4 mb-4">
-                    <div className="flex items-center justify-between">
+            {/* **ADDING: Information bar for mass edit mode** */}
+            {massEditMode && (
+                <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded">
+                    <div className="flex justify-between items-center">
                         <div>
-                            <h3 className="text-lg font-medium text-yellow-800 dark:text-yellow-200">Mass Edit Mode Active</h3>
-                            <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                                Use Ctrl+Click to select multiple cells, Shift+Click for ranges. 
-                                Tab/Shift+Tab: navigate columns | Enter: next row | Arrow keys: navigate | Ctrl+V: paste
+                            <p className="font-bold">Mass Edit Mode Active</p>
+                            <p className="text-sm">
+                                Use keyboard shortcuts: Tab/Shift+Tab (navigate), Enter (down), Arrow keys (navigate), 
+                                Ctrl+V (paste), Delete/Backspace (clear). Click and drag to select ranges.
                             </p>
                         </div>
                         <div className="flex gap-2">
                             <button
-                                onClick={handleBatchSave}
-                                disabled={!hasChanges}
-                                className={`px-4 py-2 rounded-md ${
-                                    hasChanges 
-                                        ? 'bg-green-600 hover:bg-green-700 text-white' 
-                                        : 'bg-gray-400 text-gray-700 cursor-not-allowed'
-                                }`}
+                                onClick={handleSaveAllChanges}
+                                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
                             >
-                                <FontAwesomeIcon icon={faSave} className="mr-2" />
                                 Save All
                             </button>
                             <button
-                                onClick={handleCancelAllChanges}
-                                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md"
+                                onClick={toggleMassEditMode}
+                                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
                             >
-                                <FontAwesomeIcon icon={faTimes} className="mr-2" />
                                 Cancel
                             </button>
                         </div>
@@ -787,32 +742,12 @@ const CentralDatabase = ({ darkMode }) => {
                 <div className="flex justify-center">
                     <button
                         onClick={handleFetchAllUserInfo}
-                        disabled={isMassEditMode} // ADDED: Disable during mass edit
-                        className={` mr-5 px-4 py-2 rounded-md ${
-                            isMassEditMode 
-                                ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
-                                : darkMode ? 'bg-green-500 text-gray-100 hover:bg-blue-700' : 'bg-green-500 text-white hover:bg-blue-600'
-                        }`}
+                        className={` mr-5 px-4 py-2 rounded-md ${darkMode ? 'bg-green-500 text-gray-100 hover:bg-blue-700' : 'bg-green-500 text-white hover:bg-blue-600'}`}
+                        disabled={massEditMode} // **ADDING: Disable during mass edit**
                     >
                         <FontAwesomeIcon icon={faSync} className="mr-2" />
                         {loadingAllUsers ? 'Fetching...' : 'Fetch User Data'}
                     </button>
-                    
-                    {/* ADDED: Mass Edit Button */}
-                    <button
-                        onClick={toggleMassEditMode}
-                        disabled={assets.length === 0} // ADDED: Disable when no data
-                        className={`mr-5 px-4 py-2 rounded-md ${
-                            assets.length === 0
-                                ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
-                                : isMassEditMode
-                                    ? 'bg-red-600 hover:bg-red-700 text-white'
-                                    : 'bg-purple-600 hover:bg-purple-700 text-white'
-                        }`}
-                    >
-                        {isMassEditMode ? 'Exit Grid Mode' : 'Mass Edit'}
-                    </button>
-                    
                     <button
                         onClick={handleExportToExcel}
                         className={`px-4 py-2 rounded-md ${darkMode ? 'bg-green-600 text-gray-100 hover:bg-green-700' : 'bg-green-500 text-white hover:bg-green-600'}`}
@@ -822,6 +757,7 @@ const CentralDatabase = ({ darkMode }) => {
                     <button
                         onClick={handleButtonClick}
                         className={`ml-4 px-4 py-2 rounded-md ${darkMode ? 'bg-yellow-900 text-gray-100 hover:bg-yellow-500' : 'bg-yellow-900 text-white hover:bg-yellow-600'}`}
+                        disabled={massEditMode} // **ADDING: Disable during mass edit**
                     >
                         <FontAwesomeIcon icon={faUpload} className="mr-2"/>
                     </button>
@@ -832,16 +768,28 @@ const CentralDatabase = ({ darkMode }) => {
                         onChange={handleFileChange}
                         style={{ display: 'none' }}
                     />
+                    
+                    {/* **ADDING: Mass Edit Button** */}
+                    <button
+                        onClick={toggleMassEditMode}
+                        disabled={assets.length === 0}
+                        className={`ml-4 px-4 py-2 rounded-md ${
+                            assets.length === 0 
+                                ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                                : massEditMode 
+                                    ? 'bg-red-500 text-white hover:bg-red-600' 
+                                    : 'bg-purple-500 text-white hover:bg-purple-600'
+                        }`}
+                    >
+                        {massEditMode ? 'Exit Grid Mode' : 'Mass Edit'}
+                    </button>
+                    
                 <div className="ml-10 text-center">
                     <select
                         value={view}
                         onChange={(e) => setView(e.target.value)}
-                        disabled={isMassEditMode} // ADDED: Disable during mass edit
-                        className={`px-4 py-2 rounded-md ${
-                            isMassEditMode 
-                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                : darkMode ? 'bg-gray-800 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-900'
-                        }`}
+                        className={`px-4 py-2 rounded-md ${darkMode ? 'bg-gray-800 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-900'}`}
+                        disabled={massEditMode} // **ADDING: Disable during mass edit**
                     >
                         <option value="default">View All</option>
                         <option value="DSS">DSS View</option>
@@ -853,12 +801,8 @@ const CentralDatabase = ({ darkMode }) => {
                     <select 
                         value={selectedTableName}
                         onChange={handleSelectChange}
-                        disabled={isMassEditMode} // ADDED: Disable during mass edit
-                        className={`px-4 py-2 rounded-md ${
-                            isMassEditMode 
-                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                : darkMode ? 'bg-gray-800 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-900'
-                        }`}
+                        className={`px-4 py-2 rounded-md ${darkMode ? 'bg-gray-800 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-900'}`}
+                        disabled={massEditMode} // **ADDING: Disable during mass edit**
                     >
                         <option value="">Select Year</option>
                         {tableNames.map((table) => (
@@ -867,7 +811,8 @@ const CentralDatabase = ({ darkMode }) => {
                             </option>
                         ))}
                     </select>
-                    {selectedTableName && !isMassEditMode && ( // ADDED: Hide delete button during mass edit
+                    {/* **ADDING: Hide delete button during mass edit** */}
+                    {selectedTableName && !massEditMode && (
                         <button
                             onClick={() => handleDeleteTable(selectedTableName)}
                             className={`px-3 py-2 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
@@ -881,165 +826,165 @@ const CentralDatabase = ({ darkMode }) => {
             </div>
             </div>
 
+            {/* **ADDING: Improved table with sticky headers, borders, alternating rows** */}
             <div className="container w-full">
-                {/* ADDED: Sticky table headers with improved styling */}
-                <table 
-                    {...getTableProps()} 
-                    ref={tableRef}
-                    className="table-auto overflow-scroll w-full bg-white dark:bg-gray-800 border-collapse border border-gray-300 dark:border-gray-600"
-                >
-                    <thead className="sticky top-0 z-10">
-                        {headerGroups.map((headerGroup, groupIndex) => (
-                            <React.Fragment key={groupIndex}>
-                                {/* ADDED: Header row with improved sort icons */}
-                                <tr {...headerGroup.getHeaderGroupProps()}>
-                                    {headerGroup.headers.map((column, columnIndex) => (
-                                        <th
-                                            key={columnIndex}
-                                            {...column.getHeaderProps(column.getSortByToggleProps())}
-                                            className="px-6 py-3 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400"
-                                        >
-                                            <div className="flex items-center justify-between">
-                                                {column.render('Header')}
-                                                {/* ADDED: Better sort icons with colors */}
-                                                <span>
-                                                    {column.isSorted ? (
-                                                        column.isSortedDesc ? (
-                                                            <FontAwesomeIcon icon={faSortDown} className="text-blue-500" />
-                                                        ) : (
-                                                            <FontAwesomeIcon icon={faSortUp} className="text-blue-500" />
-                                                        )
-                                                    ) : (
-                                                        <FontAwesomeIcon icon={faSort} className="text-gray-400" />
-                                                    )}
-                                                </span>
-                                            </div>
-                                        </th>
-                                    ))}
-                                    {!isMassEditMode && ( // ADDED: Hide actions column during mass edit
-                                        <th className="px-6 py-3 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                                            Actions
-                                        </th>
-                                    )}
-                                </tr>
-                                {/* ADDED: Individual column filters row */}
-                                <tr>
-                                    {headerGroup.headers.map((column, columnIndex) => (
-                                        <th key={columnIndex} className="px-2 py-2 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-600">
-                                            <input
-                                                type="text"
-                                                placeholder={`Filter ${column.Header}...`}
-                                                value={columnFilters[column.accessor] || ''}
-                                                onChange={(e) => handleColumnFilterChange(column.accessor, e.target.value)}
-                                                className={`w-full px-2 py-1 text-xs border rounded ${
-                                                    darkMode 
-                                                        ? 'bg-gray-800 border-gray-600 text-gray-300 placeholder-gray-500' 
-                                                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-                                                }`}
-                                            />
-                                        </th>
-                                    ))}
-                                    {!isMassEditMode && (
-                                        <th className="px-2 py-2 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-600"></th>
-                                    )}
-                                </tr>
-                            </React.Fragment>
-                        ))}
-                    </thead>
-                    {/* ADDED: Improved table body with alternating row colors and borders */}
-                    <tbody {...getTableBodyProps()} className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-                        {rows.map((row, rowIndex) => {
-                            prepareRow(row);
-                            return (
-                                <tr
-                                    key={rowIndex}
-                                    {...row.getRowProps()}
-                                    className={`border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                                        rowIndex % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-750'
-                                    } ${editAssetId === row.original.id ? 'bg-gray-200 dark:bg-gray-600' : ''}`}
-                                >
-                                    {row.cells.map((cell, cellIndex) => {
-                                        const cellKey = `${row.original.id}-${cell.column.id}`;
-                                        const isSelected = selectedCells.has(cellKey);
-                                        
-                                        return (
-                                            <td
-                                                key={cellIndex}
-                                                {...cell.getCellProps()}
-                                                onClick={(e) => handleCellClick(e, row.original.id, cell.column.id)}
-                                                className={`px-6 py-4 whitespace-nowrap text-sm font-medium border border-gray-300 dark:border-gray-600 ${
-                                                    isSelected && isMassEditMode 
-                                                        ? 'bg-blue-200 dark:bg-blue-800 ring-2 ring-blue-500' 
-                                                        : 'text-gray-900 dark:text-gray-100'
-                                                } ${isMassEditMode ? 'cursor-pointer' : ''}`}
+                <div className="overflow-auto max-h-[600px]" ref={tableRef}>
+                    <table {...getTableProps()} className="table-auto w-full bg-white dark:bg-gray-800 border-collapse border border-gray-300 dark:border-gray-600">
+                        <thead className="sticky top-0 bg-gray-50 dark:bg-gray-700 z-10"> {/* **ADDING: Sticky headers** */}
+                            {headerGroups.map(headerGroup => (
+                                <React.Fragment key={headerGroup.id}>
+                                    <tr {...headerGroup.getHeaderGroupProps()}>
+                                        {headerGroup.headers.map(column => (
+                                            <th
+                                                {...column.getHeaderProps(column.getSortByToggleProps())}
+                                                className="px-6 py-3 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400"
                                             >
-                                                {editAssetId === row.original.id && !isMassEditMode ? (
-                                                    <input
-                                                        type="text"
-                                                        name={cell.column.id}
-                                                        value={editValues[cell.column.id] || ''}
-                                                        onChange={handleChange}
-                                                        className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none sm:text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-gray-300' : 'border-gray-300 bg-white text-gray-900'}`}
-                                                    />
-                                                ) : isMassEditMode ? (
-                                                    /* ADDED: Excel-like editing cells */
-                                                    <input
-                                                        type="text"
-                                                        data-cell-key={cellKey}
-                                                        value={editData[cellKey] !== undefined ? editData[cellKey] : (cell.value || '')}
-                                                        onChange={(e) => handleCellChange(cellKey, e.target.value)}
-                                                        className={`w-full bg-transparent border-none outline-none focus:ring-2 focus:ring-blue-500 rounded px-1 ${
-                                                            isSelected ? 'bg-blue-100 dark:bg-blue-900' : ''
-                                                        }`}
-                                                        onFocus={(e) => e.target.select()}
-                                                    />
+                                                <div className="flex items-center justify-between">
+                                                    {column.render('Header')}
+                                                    {/* **ADDING: Better sort icons with colors** */}
+                                                    <span className="ml-2">
+                                                        {column.isSorted ? (
+                                                            column.isSortedDesc ? (
+                                                                <FontAwesomeIcon icon={faSortDown} className="text-blue-500" />
+                                                            ) : (
+                                                                <FontAwesomeIcon icon={faSortUp} className="text-blue-500" />
+                                                            )
+                                                        ) : (
+                                                            <FontAwesomeIcon icon={faSort} className="text-gray-400" />
+                                                        )}
+                                                    </span>
+                                                </div>
+                                            </th>
+                                        ))}
+                                        {/* **ADDING: Actions column header (hidden in mass edit)** */}
+                                        {!massEditMode && (
+                                            <th className="px-6 py-3 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
+                                                Actions
+                                            </th>
+                                        )}
+                                    </tr>
+                                    {/* **ADDING: Column filter row** */}
+                                    <tr>
+                                        {headerGroup.headers.map(column => (
+                                            <th key={`filter-${column.id}`} className="px-2 py-2 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700">
+                                                <input
+                                                    type="text"
+                                                    placeholder={`Filter ${column.render('Header')}`}
+                                                    value={columnFilters[column.id] || ''}
+                                                    onChange={(e) => handleColumnFilterChange(column.id, e.target.value)}
+                                                    className={`w-full px-2 py-1 text-xs border rounded ${
+                                                        darkMode 
+                                                            ? 'bg-gray-800 border-gray-600 text-gray-300 placeholder-gray-500' 
+                                                            : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+                                                    }`}
+                                                />
+                                            </th>
+                                        ))}
+                                        {!massEditMode && (
+                                            <th className="px-2 py-2 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700"></th>
+                                        )}
+                                    </tr>
+                                </React.Fragment>
+                            ))}
+                        </thead>
+                        <tbody {...getTableBodyProps()} className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                            {rows.map((row, rowIndex) => {
+                                prepareRow(row);
+                                return (
+                                    <tr
+                                        {...row.getRowProps()}
+                                        className={`
+                                            border border-gray-300 dark:border-gray-600
+                                            ${rowIndex % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-750'}
+                                            hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150
+                                            ${editAssetId === row.original.id ? 'bg-gray-200 dark:bg-gray-600' : ''}
+                                        `}
+                                    >
+                                        {row.cells.map(cell => {
+                                            const cellId = getCellId(row.original.id, cell.column.id);
+                                            const isSelected = selectedCells.has(cellId);
+                                            
+                                            return (
+                                                <td
+                                                    {...cell.getCellProps()}
+                                                    className={`
+                                                        px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 
+                                                        border border-gray-300 dark:border-gray-600
+                                                        ${isSelected ? 'bg-blue-200 dark:bg-blue-600' : ''}
+                                                        ${massEditMode ? 'cursor-pointer' : ''}
+                                                    `}
+                                                    onClick={(e) => massEditMode && handleCellClick(row.original.id, cell.column.id, e)}
+                                                >
+                                                    {massEditMode ? (
+                                                        // **ADDING: Mass edit input cells**
+                                                        <input
+                                                            type="text"
+                                                            data-cell-id={cellId}
+                                                            value={massEditValues[cellId] || ''}
+                                                            onChange={(e) => handleMassEditChange(row.original.id, cell.column.id, e.target.value)}
+                                                            onKeyDown={(e) => handleKeyDown(e, row.original.id, cell.column.id)}
+                                                            className={`
+                                                                w-full px-2 py-1 border-none outline-none bg-transparent
+                                                                ${isSelected ? 'ring-2 ring-blue-500' : ''}
+                                                                focus:ring-2 focus:ring-blue-500
+                                                            `}
+                                                        />
+                                                    ) : editAssetId === row.original.id ? (
+                                                        <input
+                                                            type="text"
+                                                            name={cell.column.id}
+                                                            value={editValues[cell.column.id] || ''}
+                                                            onChange={handleChange}
+                                                            className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none sm:text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-gray-300' : 'border-gray-300 bg-white text-gray-900'}`}
+                                                        />
+                                                    ) : (
+                                                        cell.render('Cell')
+                                                    )}
+                                                </td>
+                                            );
+                                        })}
+                                        {/* **ADDING: Actions column (hidden in mass edit mode)** */}
+                                        {!massEditMode && (
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">
+                                                {editAssetId === row.original.id ? (
+                                                    <>
+                                                        <button
+                                                            onClick={handleSaveClick}
+                                                            className={`px-3 py-1 rounded-md ${darkMode ? 'bg-green-600 text-gray-100 hover:bg-green-700' : 'bg-green-500 text-white hover:bg-green-600'}`}
+                                                        >
+                                                            <FontAwesomeIcon icon={faSave} />
+                                                        </button>
+                                                        <button
+                                                            onClick={handleCancelEdit}
+                                                            className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
+                                                        >
+                                                            <FontAwesomeIcon icon={faTimes} />
+                                                        </button>
+                                                    </>
                                                 ) : (
-                                                    cell.render('Cell')
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleEditClick(row.original)}
+                                                            className={`px-3 py-1 rounded-md ${darkMode ? 'bg-blue-600 text-gray-100 hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                                                        >
+                                                            <FontAwesomeIcon icon={faEdit} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDelete(row.original.id)}
+                                                            className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
+                                                        >
+                                                            <FontAwesomeIcon icon={faTrashAlt} />
+                                                        </button>
+                                                    </>
                                                 )}
                                             </td>
-                                        );
-                                    })}
-                                    {!isMassEditMode && ( // ADDED: Hide actions column during mass edit
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">
-                                            {editAssetId === row.original.id ? (
-                                                <>
-                                                    <button
-                                                        onClick={handleSaveClick}
-                                                        className={`px-3 py-1 rounded-md ${darkMode ? 'bg-green-600 text-gray-100 hover:bg-green-700' : 'bg-green-500 text-white hover:bg-green-600'}`}
-                                                    >
-                                                        <FontAwesomeIcon icon={faSave} />
-                                                    </button>
-                                                    <button
-                                                        onClick={handleCancelEdit}
-                                                        className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
-                                                    >
-                                                        <FontAwesomeIcon icon={faTimes} />
-                                                    </button>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <button
-                                                        onClick={() => handleEditClick(row.original)}
-                                                        className={`px-3 py-1 rounded-md ${darkMode ? 'bg-blue-600 text-gray-100 hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
-                                                    >
-                                                        <FontAwesomeIcon icon={faEdit} />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDelete(row.original.id)}
-                                                        className={`ml-2 px-3 py-1 rounded-md ${darkMode ? 'bg-red-600 text-gray-100 hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}`}
-                                                    >
-                                                        <FontAwesomeIcon icon={faTrashAlt} />
-                                                    </button>
-                                                    
-                                                </>
-                                            )}
-                                        </td>
-                                    )}
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
+                                        )}
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {showDeleteConfirm && (
