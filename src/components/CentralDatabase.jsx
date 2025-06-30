@@ -6,8 +6,8 @@ import { useTableContext } from './TableContext';
 import * as XLSX from 'xlsx';
 import axios from 'axios';
 
-// Individual Column Filter Component
-const DefaultColumnFilter = ({ column: { filterValue, setFilter } }) => {
+// Individual Column Filter Component - Memoized to prevent unnecessary re-renders
+const DefaultColumnFilter = React.memo(({ column: { filterValue, setFilter } }) => {
     return (
         <input
             value={filterValue || ''}
@@ -17,9 +17,10 @@ const DefaultColumnFilter = ({ column: { filterValue, setFilter } }) => {
             onClick={e => e.stopPropagation()}
         />
     );
-};
+});
+DefaultColumnFilter.displayName = 'DefaultColumnFilter';
 
-const CentralDatabase = ({ darkMode }) => {
+const CentralDatabase = React.memo(({ darkMode }) => {
     const [assets, setAssets] = useState([]);
     const [editAssetId, setEditAssetId] = useState(null);
     const [editValues, setEditValues] = useState({});
@@ -776,11 +777,17 @@ const CentralDatabase = ({ darkMode }) => {
 
     // CRITICAL: Track filtered data for Mass Edit mode
     useEffect(() => {
-        if (!isGridEditMode && rows) {
+        if (!isGridEditMode && rows && rows.length >= 0) {
             const currentFilteredData = rows.map(row => row.original);
-            setFilteredAssets(currentFilteredData);
+            // Only update if the filtered data has actually changed (prevent infinite loops)
+            setFilteredAssets(prevFilteredAssets => {
+                if (JSON.stringify(currentFilteredData) !== JSON.stringify(prevFilteredAssets)) {
+                    return currentFilteredData;
+                }
+                return prevFilteredAssets;
+            });
         }
-    }, [rows, isGridEditMode, assets]);
+    }, [rows, isGridEditMode]); // Removed 'assets' and 'filteredAssets' from dependencies
 
     return (
         <div className={` mx-auto p-4 ${darkMode ? 'dark' : ''}`}>
@@ -910,10 +917,11 @@ const CentralDatabase = ({ darkMode }) => {
                 <table {...getTableProps()} className="table-auto overflow-scroll w-full bg-white dark:bg-gray-800">
                     {/* Sticky Table Headers */}
                     <thead className="sticky top-0 z-10">
-                        {headerGroups.map(headerGroup => (
-                            <tr {...headerGroup.getHeaderGroupProps()}>
-                                {headerGroup.headers.map(column => (
+                        {headerGroups.map((headerGroup, headerIndex) => (
+                            <tr key={headerIndex} {...headerGroup.getHeaderGroupProps()}>
+                                {headerGroup.headers.map((column, columnIndex) => (
                                     <th
+                                        key={columnIndex}
                                         {...column.getHeaderProps(column.getSortByToggleProps())}
                                         className="px-6 py-3 border border-gray-300 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400"
                                     >
@@ -942,20 +950,25 @@ const CentralDatabase = ({ darkMode }) => {
                     <tbody {...getTableBodyProps()} className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                         {rows.map((row, rowIndex) => {
                             prepareRow(row);
+                            const { key, ...rowPropsWithoutKey } = row.getRowProps(); // Extract key separately
                             return (
                                 <tr
-                                    {...row.getRowProps()}
+                                    key={key || rowIndex} // Use extracted key or fallback to rowIndex
+                                    {...rowPropsWithoutKey} // Spread props without key
                                     className={`${
                                         rowIndex % 2 === 0 
                                             ? 'bg-white dark:bg-gray-800' 
                                             : 'bg-gray-50 dark:bg-gray-750'
                                     } hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-150 ${editAssetId === row.original.id ? 'bg-gray-200 dark:bg-gray-600' : ''}`}
                                 >
-                                    {row.cells.map(cell => (
-                                        <td
-                                            {...cell.getCellProps()}
-                                            className="px-6 py-4 border border-gray-300 dark:border-gray-600 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100"
-                                        >
+                                    {row.cells.map((cell, cellIndex) => {
+                                        const { key, ...cellPropsWithoutKey } = cell.getCellProps(); // Extract key separately
+                                        return (
+                                            <td
+                                                key={key || cellIndex} // Use extracted key or fallback to cellIndex
+                                                {...cellPropsWithoutKey} // Spread props without key
+                                                className="px-6 py-4 border border-gray-300 dark:border-gray-600 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100"
+                                            >
                                             {/* Dynamic Input Sizing for Mass Edit Mode */}
                                             {isGridEditMode ? (
                                                 <input
@@ -998,7 +1011,8 @@ const CentralDatabase = ({ darkMode }) => {
                                                 cell.render('Cell')
                                             )}
                                         </td>
-                                    ))}
+                                    );
+                                })}
                                     {!isGridEditMode && (
                                         <td className="px-6 py-4 border border-gray-300 dark:border-gray-600 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                                             {editAssetId === row.original.id ? (
@@ -1070,6 +1084,7 @@ const CentralDatabase = ({ darkMode }) => {
             )}
         </div>
     );
-};
+});
+CentralDatabase.displayName = 'CentralDatabase';
 
 export default CentralDatabase;
