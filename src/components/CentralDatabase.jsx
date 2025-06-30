@@ -1,13 +1,12 @@
-import React, { useEffect, useState, useContext, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-// NEW FEATURE: Additional icons for enhanced table features
 import { faSave, faTimes, faEdit, faUser, faTrashAlt, faFileExcel, faSync, faUpload, faTable, faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
 import { useTable, useFilters, useSortBy } from 'react-table';
 import { useTableContext } from './TableContext';
 import * as XLSX from 'xlsx';
 import axios from 'axios';
 
-// NEW FEATURE: Individual Column Filter Component
+// Individual Column Filter Component
 const DefaultColumnFilter = ({ column: { filterValue, setFilter } }) => {
     return (
         <input
@@ -34,9 +33,10 @@ const CentralDatabase = ({ darkMode }) => {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [tableToDelete, setTableToDelete] = useState('');
 
-    // NEW FEATURE: Excel-like Mass Edit State Variables
+    // Excel-like Mass Edit State Variables
     const [isGridEditMode, setIsGridEditMode] = useState(false);
     const [gridData, setGridData] = useState([]);
+    const [filteredAssets, setFilteredAssets] = useState([]); // NEW: Track filtered data
     const [selectedCell, setSelectedCell] = useState({ rowIndex: null, columnId: null });
     const [selectedRange, setSelectedRange] = useState({ start: null, end: null });
     const [isSelecting, setIsSelecting] = useState(false);
@@ -47,7 +47,7 @@ const CentralDatabase = ({ darkMode }) => {
         fetchAssets();
     }, [selectedTableName]);
 
-    // NEW FEATURE: Excel-like Mass Edit - Global Mouse Events
+    // Global Mouse Events for Grid Edit Mode
     useEffect(() => {
         const handleGlobalMouseUp = () => {
             setIsDragging(false);
@@ -98,7 +98,7 @@ const CentralDatabase = ({ darkMode }) => {
         }
     };
 
-    // NEW FEATURE: Excel-like Mass Edit Functions START
+    // BEST SOLUTION: Toggle Grid Edit Mode with proper filter handling
     const toggleGridEditMode = () => {
         if (isGridEditMode) {
             // Exit grid mode
@@ -107,10 +107,11 @@ const CentralDatabase = ({ darkMode }) => {
             setSelectedRange({ start: null, end: null });
             setIsSelecting(false);
             setIsDragging(false);
+            setGridData([]);
         } else {
-            // Enter grid mode
+            // Enter grid mode - use currently filtered data
             setIsGridEditMode(true);
-            setGridData([...assets]);
+            setGridData([...filteredAssets]);
         }
     };
 
@@ -346,8 +347,16 @@ const CentralDatabase = ({ darkMode }) => {
             });
 
             await Promise.all(promises);
-            setAssets([...gridData]);
+            
+            // Update the main assets array with the changes
+            const updatedAssets = assets.map(asset => {
+                const updatedAsset = gridData.find(gridAsset => gridAsset.id === asset.id);
+                return updatedAsset || asset;
+            });
+            setAssets(updatedAssets);
+            
             setIsGridEditMode(false);
+            setGridData([]);
             alert('All changes saved successfully!');
         } catch (error) {
             console.error('Failed to save grid changes:', error);
@@ -426,7 +435,6 @@ const CentralDatabase = ({ darkMode }) => {
         }
         return [];
     };
-    // NEW FEATURE: Excel-like Mass Edit Functions END
 
     const handleEditClick = (asset) => {
         setEditAssetId(asset.id);
@@ -518,14 +526,14 @@ const CentralDatabase = ({ darkMode }) => {
 
         await Promise.all(userInfoPromises);
         setLoadingAllUsers(false);
-  
+    };
+
     useEffect(() => {
         handleFetchAllUserInfo()
 
         const interval = setInterval(() => {handleFetchAllUserInfo();}, 2 * 60 * 1000);
         return () => clearInterval(interval);
     },[])
-  };
 
     const updateAssetDetails = async (employeeId, userInfoOutput) => {
         const loginIDMatch = userInfoOutput.match(/SamAccountName\s*:\s*(\S+)/);
@@ -685,7 +693,7 @@ const CentralDatabase = ({ darkMode }) => {
         setTableToDelete('');
     };
 
-    // NEW FEATURE: Enhanced columns with individual filters
+    // Enhanced columns with individual filters
     const columns = React.useMemo(() => {
         if (view === 'default') {
             return [
@@ -766,6 +774,14 @@ const CentralDatabase = ({ darkMode }) => {
         useSortBy
     );
 
+    // CRITICAL: Track filtered data for Mass Edit mode
+    useEffect(() => {
+        if (!isGridEditMode && rows) {
+            const currentFilteredData = rows.map(row => row.original);
+            setFilteredAssets(currentFilteredData);
+        }
+    }, [rows, isGridEditMode, assets]);
+
     return (
         <div className={` mx-auto p-4 ${darkMode ? 'dark' : ''}`}>
             <div className={`bg-white shadow-lg rounded-lg dark:bg-gray-800 mb-8 p-6 w-full mt-20`}>
@@ -791,12 +807,12 @@ const CentralDatabase = ({ darkMode }) => {
                     >
                         <FontAwesomeIcon icon={faUpload} className="mr-2"/>
                     </button>
-                    {/* NEW FEATURE: Excel-like Mass Edit Toggle Button */}
+                    {/* Mass Edit Toggle Button */}
                     <button
                         onClick={toggleGridEditMode}
-                        disabled={assets.length === 0}
+                        disabled={filteredAssets.length === 0}
                         className={`ml-4 px-4 py-2 rounded-md ${
-                            assets.length === 0 
+                            filteredAssets.length === 0 
                                 ? 'bg-gray-400 text-gray-600 cursor-not-allowed' 
                                 : isGridEditMode
                                     ? darkMode 
@@ -857,13 +873,13 @@ const CentralDatabase = ({ darkMode }) => {
                 </div>
             </div>
 
-            {/* NEW FEATURE: Excel-like Mass Edit Save/Cancel Bar */}
+            {/* Mass Edit Mode Save/Cancel Bar */}
             {isGridEditMode && (
                 <div className="bg-yellow-100 dark:bg-yellow-800 border-l-4 border-yellow-500 p-4 mb-4">
                     <div className="flex justify-between items-center">
                         <div>
                             <p className="text-yellow-700 dark:text-yellow-200 font-medium">
-                                Excel-like Edit Mode Active
+                                Excel-like Edit Mode Active ({gridData.length} records)
                             </p>
                             <p className="text-yellow-600 dark:text-yellow-300 text-sm">
                                 Click+Drag or Shift+Click for ranges • Type to fill selection • Ctrl+V to paste • Delete/Backspace to clear • Arrow keys navigate
@@ -889,10 +905,10 @@ const CentralDatabase = ({ darkMode }) => {
                 </div>
             )}
 
-            {/* ORIGINAL: Keep original table container structure with horizontal scroll */}
+            {/* Table Container */}
             <div className="container w-full">
                 <table {...getTableProps()} className="table-auto overflow-scroll w-full bg-white dark:bg-gray-800">
-                    {/* NEW FEATURE: Sticky Table Headers */}
+                    {/* Sticky Table Headers */}
                     <thead className="sticky top-0 z-10">
                         {headerGroups.map(headerGroup => (
                             <tr {...headerGroup.getHeaderGroupProps()}>
@@ -901,7 +917,7 @@ const CentralDatabase = ({ darkMode }) => {
                                         {...column.getHeaderProps(column.getSortByToggleProps())}
                                         className="px-6 py-3 border border-gray-300 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400"
                                     >
-                                        {/* NEW FEATURE: Enhanced header with sorting and filters */}
+                                        {/* Enhanced header with sorting and filters */}
                                         <div className="flex items-center justify-between cursor-pointer mb-2">
                                             <span>{column.render('Header')}</span>
                                             <span className="ml-2">
@@ -940,7 +956,7 @@ const CentralDatabase = ({ darkMode }) => {
                                             {...cell.getCellProps()}
                                             className="px-6 py-4 border border-gray-300 dark:border-gray-600 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100"
                                         >
-                                            {/* KEY FIX: Dynamic Input Sizing for Mass Edit Mode */}
+                                            {/* Dynamic Input Sizing for Mass Edit Mode */}
                                             {isGridEditMode ? (
                                                 <input
                                                     ref={(el) => {
