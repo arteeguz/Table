@@ -940,7 +940,7 @@ const CentralDatabase = ({ darkMode }) => {
                                             {...cell.getCellProps()}
                                             className="px-6 py-4 border border-gray-300 dark:border-gray-600 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100"
                                         >
-                                            {/* NEW FEATURE: Excel-like Grid Cell Rendering */}
+                                            {/* KEY FIX: Dynamic Input Sizing for Mass Edit Mode */}
                                             {isGridEditMode ? (
                                                 <input
                                                     ref={(el) => {
@@ -956,6 +956,7 @@ const CentralDatabase = ({ darkMode }) => {
                                                     onMouseUp={handleMouseUp}
                                                     onKeyDown={(e) => handleKeyDown(e, rowIndex, cell.column.id)}
                                                     onPaste={(e) => handlePaste(e, rowIndex, cell.column.id)}
+                                                    size={Math.max(10, (gridData[rowIndex]?.[cell.column.id] || '').length + 2)}
                                                     className={`px-2 py-1 border rounded focus:outline-none text-sm font-medium ${
                                                         isCellInRange(rowIndex, cell.column.id)
                                                             ? 'bg-blue-100 border-blue-500 ring-1 ring-blue-300'
@@ -966,10 +967,7 @@ const CentralDatabase = ({ darkMode }) => {
                                                                     : 'border-gray-300 bg-white text-gray-900 hover:bg-gray-50'
                                                     }`}
                                                     style={{
-                                                        userSelect: isDragging ? 'none' : 'auto',
-                                                        width: '100%',
-                                                        minWidth: '0',
-                                                        boxSizing: 'border-box'
+                                                        userSelect: isDragging ? 'none' : 'auto'
                                                     }}
                                                 />
                                             ) : editAssetId === row.original.id ? (
